@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR Control Plane — Customers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/cp-inventory-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/cp-pager.js" defer></script>
+<script src="../components/cp-nav.js" defer></script>
+<style>
+  .cust-name { display: flex; align-items: center; gap: 12px; }
+  .cust-logo { width: 36px; height: 36px; border-radius: 9px; background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+  .num { font-family: var(--font-mono); }
+  /* Contact person sits right after the numeric Users column — give it room. */
+  .dt th:nth-child(5), .dt td:nth-child(5) { padding-left: 32px; }
+</style>
+</head>
+<body class="app">
+<div data-cp-nav data-cp-mode="mg" data-active="customers"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Customers</h1>
+      <div class="page-sub"><span id="count-lbl">3 tenants</span><span class="sep"></span><span>MediGrowth · all provincial AED programs</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-default" data-dialog-open="dlg-new"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New customer</button>
+    </div>
+  </div>
+
+  <div class="tiles" style="grid-template-columns:repeat(3,1fr);margin-bottom:28px;">
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Tenants</span></div><div class="stat-value" id="k-tenants">—</div><div class="stat-meta" id="k-tenants-meta">—</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Devices assigned</span></div><div class="stat-value" id="k-assigned">—</div><div class="stat-meta"><a href="Inventory.html?filter=unassigned" id="k-unassigned-link">— unassigned →</a></div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Seats used</span></div><div class="stat-value" id="k-seats">—</div><div class="stat-meta">across all tenants</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-toolbar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="q" placeholder="Search customers…" /></div>
+    </div>
+    <div class="dt-wrap">
+      <table class="dt">
+        <thead><tr>
+          <th class="sortable" data-sort="name"><span class="th-inner">Customer<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="status"><span class="th-inner">Status<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable num" data-sort="devices"><span class="th-inner">Devices<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable num" data-sort="users"><span class="th-inner">Users<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="contact"><span class="th-inner">Contact person<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="created"><span class="th-inner">Created<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="col-actions"></th>
+        </tr></thead>
+        <tbody id="dt-body"></tbody>
+      </table>
+    </div>
+    <div id="dt-foot"></div>
+  </div>
+</main>
+
+<!-- New customer dialog -->
+<div class="dialog-overlay" id="dlg-new" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">New customer</span><span class="dialog-desc">Set up a new AED program tenant.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Customer name <span class="req">*</span></label><input class="input" id="new-name" placeholder="Enter customer name" /></div>
+      <div class="field"><label class="field-label">Contact person</label><input class="input" id="new-contact" placeholder="Contact person’s name" /></div>
+      <div class="field"><label class="field-label">Contact</label><input class="input" id="new-contact-via" placeholder="Email, phone no., LINE ID…" /></div>
+      <div class="field"><label class="field-label">Default seat cap per group</label>
+        <div class="combobox has-value" data-select>
+          <button type="button" class="combobox-trigger"><span class="combobox-value">4</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+            <div class="combobox-item" data-value="1">1</div>
+            <div class="combobox-item" data-value="2">2</div>
+            <div class="combobox-item" data-value="3">3</div>
+            <div class="combobox-item is-selected" data-value="4">4</div>
+            <div class="combobox-item" data-value="5">5</div>
+            <div class="combobox-item" data-value="6">6</div>
+            <div class="combobox-item" data-value="7">7</div>
+            <div class="combobox-item" data-value="8">8</div>
+            <div class="combobox-item" data-value="9">9</div>
+            <div class="combobox-item" data-value="10">10</div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="new-go">Create tenant</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Rename customer -->
+<div class="dialog-overlay" id="dlg-rename" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Rename customer</span><span class="dialog-desc" id="ren-desc">—</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Customer name <span class="req">*</span></label><input class="input" id="ren-name" /></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="ren-go">Save</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Edit contact person -->
+<div class="dialog-overlay" id="dlg-contact" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Edit contact person</span><span class="dialog-desc" id="con-desc">—</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Contact person</label><input class="input" id="con-name" placeholder="Contact person’s name" /></div>
+      <div class="field"><label class="field-label">Contact</label><input class="input" id="con-via" placeholder="Email, phone no., LINE ID…" /></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="con-go">Save</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Suspend confirmation -->
+<div class="dialog-overlay" id="dlg-suspend" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Suspend tenant?</span><span class="dialog-desc">Blocks all sign-ins for <strong id="sus-name"></strong>.</span></div>
+    <div class="dialog-body">
+      <div class="alert soft warning">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div class="alert-body"><span class="alert-title">Users lose access immediately</span><span class="alert-desc" id="sus-users"></span></div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-destructive" id="sus-go">Suspend tenant</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const customers = [
+    { id: 'cmi', name: 'โครงการ AED Province A', short: 'CM', status: 'active', users: 6, contact: 'อรุณี ส.', contactVia: 'arunee@agency.example', created: '18 Jan 2026', createdBy: 'provisioning@medigrowth.co.th' },
+    { id: 'cri', name: 'โครงการ AED Province B', short: 'CR', status: 'active', users: 3, contact: 'Somsak T.', contactVia: '081-234-5678', created: '2 Mar 2026', createdBy: 'ops@medigrowth.co.th' },
+    { id: 'pkt', name: 'โครงการ AED Province C', short: 'PK', status: 'onboarding', users: 0, contact: '', contactVia: '', created: '28 Jun 2026', createdBy: 'provisioning@medigrowth.co.th' },
+  ];
+  // Device counts come from the shared pool so the tiles and Inventory agree.
+  const UNITS = window.AEDAR_CP_UNITS || [];
+  const KEY = window.AEDAR_CP_CUST_KEY || {};
+  const devicesOf = (id) => UNITS.filter(u => u.cust === KEY[id]).length;
+  function statusBadge(s) {
+    if (s === 'active') return '<span class="badge badge-status badge-operational"><span class="badge-dot"></span>Active</span>';
+    if (s === 'suspended') return '<span class="badge badge-status badge-offline"><span class="badge-dot"></span>Suspended</span>';
+    return '<span class="badge badge-status badge-validate"><span class="badge-dot"></span>Onboarding</span>';
+  }
+  let susId = null;
+  const susGo = document.getElementById('sus-go');
+  function askSuspend(id) {
+    const c = customers.find(x => x.id === id); if (!c) return;
+    susId = id;
+    document.getElementById('sus-name').textContent = c.name;
+    document.getElementById('sus-users').textContent = c.users + (c.users === 1 ? ' user' : ' users') + ' will be signed out until the tenant is reactivated.';
+    AEDARDialog.open('dlg-suspend');
+  }
+  susGo.addEventListener('click', () => {
+    const c = customers.find(x => x.id === susId);
+    if (c) c.status = 'suspended';
+    AEDARDialog.close(document.getElementById('dlg-suspend'));
+    render();
+    AEDARToast.show({ variant: 'error', title: 'Tenant suspended', description: c ? c.name : '' });
+  });
+  // Rename + contact edits, both driven from the row menu.
+  let editId = null;
+  function openRename(cid) {
+    const c = customers.find(x => x.id === cid); if (!c) return;
+    editId = cid;
+    document.getElementById('ren-desc').textContent = 'Rename “' + c.name + '”.';
+    const inp = document.getElementById('ren-name'); inp.value = c.name;
+    AEDARDialog.open('dlg-rename'); setTimeout(() => inp.focus(), 60);
+  }
+  document.getElementById('ren-go').addEventListener('click', () => {
+    const c = customers.find(x => x.id === editId); if (!c) return;
+    const val = document.getElementById('ren-name').value.trim();
+    if (!val) { AEDARToast.show({ variant: 'error', title: 'Customer name is required' }); return; }
+    c.name = val;
+    AEDARDialog.close(document.getElementById('dlg-rename'));
+    render(); AEDARToast.show({ variant: 'success', title: 'Customer renamed', description: val });
+  });
+  function openContact(cid) {
+    const c = customers.find(x => x.id === cid); if (!c) return;
+    editId = cid;
+    document.getElementById('con-desc').textContent = 'Who MediGrowth talks to at “' + c.name + '”.';
+    const inp = document.getElementById('con-name');
+    inp.value = c.contact || '';
+    document.getElementById('con-via').value = c.contactVia || '';
+    AEDARDialog.open('dlg-contact'); setTimeout(() => inp.focus(), 60);
+  }
+  document.getElementById('con-go').addEventListener('click', () => {
+    const c = customers.find(x => x.id === editId); if (!c) return;
+    c.contact = document.getElementById('con-name').value.trim();
+    c.contactVia = document.getElementById('con-via').value.trim();
+    AEDARDialog.close(document.getElementById('dlg-contact'));
+    render(); AEDARToast.show({ variant: 'success', title: 'Contact updated', description: c.contact || c.name });
+  });
+  document.getElementById('new-go').addEventListener('click', () => {
+    const input = document.getElementById('new-name');
+    const name = input.value.trim();
+    if (!name) { input.focus(); AEDARToast.show({ variant: 'error', title: 'Customer name is required' }); return; }
+    const words = name.replace(/[^\p{L}\p{N} ]/gu, '').split(/\s+/).filter(Boolean);
+    const initials = words.length > 1 ? words.slice(0, 2).map(w => w[0]).join('') : (words[0] || name);
+    const id = 'c' + Date.now().toString(36).slice(-4);
+    customers.unshift({
+      id, name, short: initials.slice(0, 2).toUpperCase(), status: 'onboarding', users: 0,
+      contact: document.getElementById('new-contact').value.trim(),
+      contactVia: document.getElementById('new-contact-via').value.trim(),
+      created: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+    });
+    input.value = ''; document.getElementById('new-contact').value = ''; document.getElementById('new-contact-via').value = '';
+    AEDARDialog.close(document.getElementById('dlg-new'));
+    render();
+    AEDARToast.show({ variant: 'success', title: 'Tenant created', description: 'Next: build the org chart.' });
+  });
+  function renderTiles() {
+    const unassigned = UNITS.filter(u => !u.cust).length;
+    document.getElementById('k-tenants').textContent = customers.length;
+    document.getElementById('k-tenants-meta').textContent = customers.filter(c => c.status === 'onboarding').length + ' onboarding';
+    document.getElementById('k-assigned').textContent = UNITS.length - unassigned;
+    document.getElementById('k-unassigned-link').textContent = unassigned + ' unassigned →';
+    document.getElementById('k-seats').textContent = customers.reduce((a, c) => a + c.users, 0);
+  }
+  let q = '', sortKey = 'name', sortDir = 1, page = 0, pageSize = 12;
+  const STATUS_ORDER = { active: 0, onboarding: 1, suspended: 2 };
+  const dateVal = (s) => new Date(s).getTime() || 0;
+  function sortVal(c, k) {
+    if (k === 'name') return c.name;
+    if (k === 'status') return STATUS_ORDER[c.status];
+    if (k === 'devices') return devicesOf(c.id);
+    if (k === 'users') return c.users;
+    if (k === 'contact') return c.contact || '';
+    return dateVal(c.created);
+  }
+  function paintHeaders() {
+    document.querySelectorAll('.dt th[data-sort]').forEach(el => {
+      const on = el.dataset.sort === sortKey;
+      el.classList.toggle('sorted', on);
+      const g = el.querySelector('.th-sort path');
+      if (g) g.setAttribute('d', !on ? 'm7 15 5 5 5-5M7 9l5-5 5 5' : (sortDir === 1 ? 'M12 19V5M7 10l5-5 5 5' : 'M12 5v14M7 14l5 5 5-5'));
+    });
+  }
+  document.querySelectorAll('.dt th[data-sort]').forEach(el => el.addEventListener('click', () => {
+    const k = el.dataset.sort;
+    if (k === sortKey) sortDir *= -1; else { sortKey = k; sortDir = (k === 'name' || k === 'status' || k === 'contact') ? 1 : -1; }
+    page = 0; render();
+  }));
+  const body = document.getElementById('dt-body');
+  function render() {
+    renderTiles();
+    const scope = window.AEDARCPScope ? window.AEDARCPScope.get() : 'all';
+    const data = customers.filter(c => (scope === 'all' || c.id === scope) && (!q || c.name.toLowerCase().includes(q)))
+      .sort((a, b) => {
+        const x = sortVal(a, sortKey), y = sortVal(b, sortKey);
+        return (typeof x === 'string' ? x.localeCompare(y, 'th') : x - y) * sortDir;
+      });
+    paintHeaders();
+    document.getElementById('count-lbl').textContent = data.length + ' tenant' + (data.length === 1 ? '' : 's');
+    const pages = Math.max(1, Math.ceil(data.length / pageSize));
+    if (page >= pages) page = pages - 1;
+    window.CPPager.render(document.getElementById('dt-foot'), { page, size: pageSize, total: data.length },
+      { onPage: (p) => { page = p; render(); } });
+    body.innerHTML = data.slice(page * pageSize, page * pageSize + pageSize).map(c => `
+      <tr class="clickable" data-id="${c.id}" data-st="${c.status}">
+        <td><div class="cust-name"><span class="cust-logo">${c.short}</span><span class="dt-primary">${c.name}</span></div></td>
+        <td>${statusBadge(c.status)}</td>
+        <td class="num">${devicesOf(c.id)}</td>
+        <td class="num">${c.users}</td>
+        <td>${c.contact ? '<div class="dt-cell-stack"><span>' + c.contact + '</span>' + (c.contactVia ? '<span class="dt-sub">' + c.contactVia + '</span>' : '') + '</div>' : '<span class="dt-sub">—</span>'}</td>
+        <td><span class="dt-sub">${c.created}</span></td>
+        <td class="col-actions"><span class="dt-actions"><button class="btn btn-ghost btn-icon" aria-label="Actions" data-menu-btn><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></span></td>
+      </tr>`).join('');
+    body.querySelectorAll('[data-menu-btn]').forEach(btn => btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.AEDARMenu.open(btn, [
+        { label: 'Rename customer', action: 'rename' },
+        { label: 'Edit contact person', action: 'contact' },
+        { separator: true },
+        { label: 'Roles & permissions', action: 'roles' },
+        { label: 'Device inventory', action: 'inv' },
+        { separator: true },
+        btn.closest('tr').dataset.st === 'suspended'
+          ? { label: 'Reactivate tenant', action: 'reactivate' }
+          : { label: 'Suspend tenant', destructive: true, action: 'suspend' },
+      ], (a) => {
+        const cid = btn.closest('tr').dataset.id;
+        if ((a === 'roles' || a === 'inv') && window.AEDARCPScope) AEDARCPScope.set(cid);
+        if (a === 'roles') location.href = '../control-plane-customer/Roles.html';
+        else if (a === 'inv') location.href = '../control-plane-customer/Inventory.html';
+        else if (a === 'rename') openRename(cid);
+        else if (a === 'contact') openContact(cid);
+        else if (a === 'suspend') askSuspend(cid);
+        else if (a === 'reactivate') {
+          const c = customers.find(x => x.id === cid);
+          c.status = c.users ? 'active' : 'onboarding';
+          render();
+          AEDARToast.show({ variant: 'success', title: 'Tenant reactivated', description: c.name });
+        }
+      });
+    }));
+    body.querySelectorAll('tr').forEach(tr => tr.addEventListener('click', (e) => { if (e.target.closest('[data-menu-btn]')) return; if (window.AEDARCPScope) AEDARCPScope.set(tr.dataset.id); location.href = '../control-plane-customer/OrgChart.html'; }));
+  }
+  document.getElementById('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); page = 0; render(); });
+  window.addEventListener('aedar:customer', render);
+  render();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en" data-hero="phone">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bloomingbifi — Bi, Product Designer</title>
+  <meta name="description" content="Portfolio of Bi, a product designer growing digital products that feel effortless.">
+  <meta property="og:title" content="Bloomingbifi — Bi, Product Designer">
+  <meta property="og:description" content="Digital products that feel effortless. Interaction, motion and the last 5% of polish.">
+  <meta name="theme-color" content="#B4DEFF">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-30 -30 60 60'%3E%3Cg fill='%23FF8FB1' stroke='%231B2744' stroke-width='3' stroke-linejoin='round'%3E%3Cellipse cy='-13' rx='8' ry='11'/%3E%3Cellipse cy='-13' rx='8' ry='11' transform='rotate(72)'/%3E%3Cellipse cy='-13' rx='8' ry='11' transform='rotate(144)'/%3E%3Cellipse cy='-13' rx='8' ry='11' transform='rotate(216)'/%3E%3Cellipse cy='-13' rx='8' ry='11' transform='rotate(288)'/%3E%3C/g%3E%3Ccircle r='6' fill='%23FFCB2E' stroke='%231B2744' stroke-width='3'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Figtree:wght@300..700&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Shared hill gradients -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="grass-back" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CFF5B4"/><stop offset="1" stop-color="#8EDB8F"/></linearGradient>
+      <linearGradient id="grass-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9BE38F"/><stop offset="1" stop-color="#34A66B"/></linearGradient>
+      <linearGradient id="cloud-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".62" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E6ECF4"/></linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Sky + clouds (fixed backdrop) -->
+  <div class="sky" aria-hidden="true"></div>
+  <div class="dusk" aria-hidden="true"></div>
+  <div class="clouds" aria-hidden="true">
+    <div class="cl-layer cl-far"></div>
+    <div class="cl-layer cl-mid"></div>
+    <div class="cl-layer cl-near"></div>
+  </div>
+
+  <!-- Preloader -->
+  <div class="loader" aria-hidden="true">
+    <span class="loader-flower" data-flower="rose" data-stem="0"></span>
+    <span class="loader-label">Bloomingbifi</span>
+    <span class="loader-count"><span data-count>0</span>%</span>
+  </div>
+
+  <!-- Custom cursor (desktop only) -->
+  <div class="cursor" aria-hidden="true">
+    <span class="cursor-dot"></span>
+    <span class="cursor-ring"><span class="cursor-label"></span></span>
+  </div>
+
+  <!-- Chapter label: tells the story scene you are in -->
+  <div class="scene-tag glass" aria-hidden="true"><span class="st-inner"><span class="st-num">01</span><span class="st-name">The meadow</span></span></div>
+
+  <!-- Watering-can cursor: appears over the grass so you know you can plant here -->
+  <div class="can" aria-hidden="true">
+    <div class="can-drops"><i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i><i style="--n:3"></i></div>
+    <div class="can-tilt">
+      <svg viewBox="-8 0 96 66">
+        <defs><linearGradient id="can-shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1B2C8C" stop-opacity=".25"/></linearGradient></defs>
+        <path d="M22 50 L5 27" stroke="#4E6FE8" stroke-width="7" stroke-linecap="round" fill="none"/>
+        <path d="M-5 21 L9 16 L12 32 L-1 35Z" fill="#3452C9" stroke="#3452C9" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M64 28 C86 24 86 55 64 53" stroke="#4E6FE8" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <path d="M28 21 C28 3 56 3 56 21" stroke="#4E6FE8" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <rect x="18" y="20" width="48" height="42" rx="10" fill="#6B8CFF"/>
+        <rect x="18" y="20" width="48" height="42" rx="10" fill="url(#can-shine)"/>
+        <rect x="18" y="35" width="48" height="6" fill="#4E6FE8" opacity=".4"/>
+        <path d="M27 29 L27 53" stroke="rgba(255,255,255,.6)" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Butterfly cursor: replaces the plain dot -->
+  <div class="butterfly" aria-hidden="true">
+    <svg viewBox="-30 -24 60 46">
+      <defs>
+        <radialGradient id="bf-a" cx=".3" cy=".3" r=".9"><stop offset="0" stop-color="#FFF6D6"/><stop offset=".45" stop-color="#FFC24D"/><stop offset="1" stop-color="#FF6F91"/></radialGradient>
+        <radialGradient id="bf-b" cx=".3" cy=".25" r=".9"><stop offset="0" stop-color="#F4EBFF"/><stop offset=".55" stop-color="#B9A6FF"/><stop offset="1" stop-color="#7C8CFF"/></radialGradient>
+        <g id="bf-half">
+          <path d="M0 2 C-9 3 -21 8 -17 17 C-12 22 -3 13 0 3Z" fill="url(#bf-b)"/>
+          <path d="M0 -1 C-3 -20 -29 -25 -29 -8 C-29 3 -13 6 0 1Z" fill="url(#bf-a)"/>
+          <path d="M-1 0 C-9 -5 -18 -9 -25 -11 M-1 1 C-10 0 -19 -1 -26 -3" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".8" stroke-linecap="round"/>
+          <ellipse cx="-15" cy="-11" rx="7" ry="3" transform="rotate(-24 -15 -11)" fill="#fff" opacity=".5"/>
+          <circle cx="-23" cy="-6" r="1.6" fill="#fff" opacity=".8"/>
+        </g>
+      </defs>
+      <g class="wing"><use href="#bf-half"/></g>
+      <g class="wing"><use href="#bf-half" transform="scale(-1 1)"/></g>
+      <ellipse rx="1.7" ry="8" fill="#2A3350"/>
+      <circle cy="-8.5" r="2" fill="#2A3350"/>
+      <path d="M0 -9 C-1 -15 -5 -18 -8 -17 M0 -9 C1 -15 5 -18 8 -17" fill="none" stroke="#2A3350" stroke-width=".9" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Petals drifting slowly behind the page -->
+  <div class="drift" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <!-- Glass navigation -->
+  <header class="nav glass">
+    <a href="#hero" class="nav-logo" data-cursor-grow>Blooming<b>bifi</b></a>
+    <nav class="nav-links" aria-label="Primary">
+      <span class="nav-pill"></span>
+      <a href="#work" data-cursor-grow>Works</a>
+      <a href="#experiences" data-cursor-grow>Experiences</a>
+      <a href="assets/resume.pdf" class="is-cta" data-cursor-grow>Resume</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+
+      <div class="hero-inner">
+        <p class="hero-eyebrow glass"><span class="pulse"></span> Available for new projects · Bangkok</p>
+        <h1 class="hero-title">
+          <span class="h-line"><span class="line-inner">I design digital</span></span>
+          <span class="h-line"><span class="line-inner">products that</span></span>
+          <span class="h-line"><span class="line-inner">feel <em>effortless.</em></span></span>
+        </h1>
+        <div class="hero-foot">
+          <p class="hero-sub">Interaction, motion and systems thinking,<br>polished until it disappears into the experience.</p>
+          <a href="#work" class="btn glass hero-cta" data-cursor-grow>See my works <span>↓</span></a>
+          <a href="assets/resume.pdf" class="btn-ghost hero-cta" data-cursor-grow>Resume</a>
+        </div>
+        <ul class="hero-tags">
+          <li>Fintech</li><li>Design systems</li><li>Interaction</li><li>Prototyping</li>
+        </ul>
+      </div>
+
+      <!-- Featured work index: portfolio-style shortcuts -->
+      <nav class="hero-index" aria-label="Featured work">
+        <span>Featured</span>
+        <a href="#work" data-cursor-grow><b>01</b> Send money</a>
+        <a href="#work" data-cursor-grow><b>02</b> Receive &amp; request</a>
+        <a href="#work" data-cursor-grow><b>03</b> Design system</a>
+      </nav>
+
+      <!-- Meadow, back layer: hill + flowers (flowers are generated in js/main.js) -->
+      <div class="layer layer-back plant-zone">
+        <svg class="hill" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 120 C240 30 480 40 720 110 C960 180 1200 160 1440 60 L1440 300 L0 300Z" fill="url(#grass-back)"/>
+          <path d="M0 120 C240 30 480 40 720 110 C960 180 1200 160 1440 60" fill="none" stroke="#F2FFE6" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="meadow" data-set="hb"></div>
+      </div>
+
+      
+
+      <!-- Hero: an interactive phone prototype (PLACEHOLDER screens: swap in a real project flow) -->
+      <div class="hero-visual proto-wrap">
+        <div class="proto" role="group" aria-label="Interactive prototype: send money">
+          <div class="proto-phone">
+            <div class="pp-island"></div>
+            <div class="pp-screen">
+              <div class="pp-view pp-send is-on">
+                <div class="pp-top"><span>Send money</span><i class="pp-dot"></i></div>
+                <div class="pp-who"><span class="pp-av"></span><div><b>Mint</b><small>•••• 4821</small></div></div>
+                <div class="pp-lbl">Amount</div>
+                <div class="pp-amt">
+                  <button class="pp-step" data-step="-250" aria-label="Decrease amount">−</button>
+                  <strong>฿ <span data-amt>1,250</span></strong>
+                  <button class="pp-step" data-step="250" aria-label="Increase amount">+</button>
+                </div>
+                <div class="pp-chips"><button data-set="500">฿500</button><button data-set="1000">฿1,000</button><button data-set="2500">฿2,500</button></div>
+                <button class="pp-cta" data-confirm><span>Confirm</span></button>
+              </div>
+              <div class="pp-view pp-done">
+                <div class="pp-check"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27 l8 8 l15 -17"/></svg></div>
+                <b>Sent!</b>
+                <small>฿ <span data-amt2>1,250</span> to Mint</small>
+                <button class="pp-again" data-again>Send again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="proto-flowers" aria-hidden="true"></div>
+      </div>
+
+      
+
+      <!-- Meadow, front layer (in front of the mascot) -->
+      <div class="layer layer-front plant-zone">
+        <svg class="hill" viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 150 C300 90 560 200 860 140 C1100 95 1300 110 1440 150 L1440 300 L0 300Z" fill="url(#grass-front)"/>
+          <path d="M0 150 C300 90 560 200 860 140 C1100 95 1300 110 1440 150" fill="none" stroke="#C9F5B8" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="meadow" data-set="hf"></div>
+      </div>
+
+      <!-- Flowers planted by clicking the grass -->
+      <div class="planted" aria-hidden="true"></div>
+    </section>
+
+    <!-- MARQUEE ribbon -->
+    <div class="marquee glass" aria-hidden="true">
+      <div class="marquee-track">
+        <div class="marquee-group">
+          <span>Product Design</span><i>✦</i><span>Interaction</span><i>✦</i><span>Motion</span><i>✦</i><span>Design Systems</span><i>✦</i><span>Prototyping</span><i>✦</i>
+        </div>
+        <div class="marquee-group">
+          <span>Product Design</span><i>✦</i><span>Interaction</span><i>✦</i><span>Motion</span><i>✦</i><span>Design Systems</span><i>✦</i><span>Prototyping</span><i>✦</i>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKS -->
+    <section class="work" id="work">
+      <header class="section-head reveal">
+        <span class="section-num">(01)</span>
+        <h2>Selected <em>works</em></h2>
+        <span class="section-note">2023 — 2026</span>
+      </header>
+
+      <!-- PLACEHOLDER case studies: replace titles, tags and phone content with real projects -->
+      <article class="work-item item-a">
+        <a href="#" class="tilt" data-cursor="View">
+          <div class="media" style="--c1:#FFD9C2; --c2:#FF8FB8;">
+            <div class="media-inner">
+              <div class="phone back" data-speed="0.35">
+                <div class="ph-notch"></div>
+                <div class="ph-label">Recent</div>
+                <div class="ph-list"><i></i><i></i><i></i></div>
+              </div>
+              <div class="phone front" data-speed="-0.2">
+                <div class="ph-notch"></div>
+                <div class="ph-label">Send to</div>
+                <div class="ph-avatar"></div>
+                <div class="ph-amount">฿ 1,250</div>
+                <div class="ph-btn">Confirm</div>
+              </div>
+            </div>
+          </div>
+          <span class="fl peek peek-tr" style="--w:clamp(60px,8vw,110px)" data-flower="gerbera" data-stem="30" data-speed="1"></span>
+        </a>
+        <div class="work-meta reveal">
+          <span class="idx">01</span>
+          <h3>Send money, <em>rethought</em></h3>
+          <p>Fintech · Mobile · 2025</p>
+        </div>
+      </article>
+
+      <article class="work-item item-b">
+        <a href="#" class="tilt" data-cursor="View">
+          <div class="media" style="--c1:#CFE0FF; --c2:#7FA0FF;">
+            <div class="media-inner">
+              <div class="phone back" data-speed="-0.3">
+                <div class="ph-notch"></div>
+                <div class="ph-label">Requests</div>
+                <div class="ph-list"><i></i><i></i></div>
+              </div>
+              <div class="phone front" data-speed="0.2">
+                <div class="ph-notch"></div>
+                <div class="ph-label">Your QR</div>
+                <div class="ph-qr"></div>
+                <div class="ph-btn">Share</div>
+              </div>
+            </div>
+          </div>
+          <span class="fl peek peek-bl" style="--w:clamp(60px,8vw,110px)" data-flower="daisy" data-stem="30" data-speed="0.8"></span>
+        </a>
+        <div class="work-meta reveal">
+          <span class="idx">02</span>
+          <h3>Receive &amp; <em>request</em></h3>
+          <p>Fintech · Mobile · 2025</p>
+        </div>
+      </article>
+
+      <article class="work-item item-c">
+        <a href="#" class="tilt" data-cursor="View">
+          <div class="media" style="--c1:#D6F5DF; --c2:#FFD84D;">
+            <div class="media-inner">
+              <div class="phone back" data-speed="0.3">
+                <div class="ph-notch"></div>
+                <div class="ph-label">Tokens</div>
+                <div class="ph-swatches"><i></i><i></i><i></i><i></i></div>
+              </div>
+              <div class="phone front" data-speed="-0.25">
+                <div class="ph-notch"></div>
+                <div class="ph-label">Components</div>
+                <div class="ph-list"><i></i><i></i><i></i></div>
+                <div class="ph-btn">Primary</div>
+              </div>
+            </div>
+          </div>
+          <span class="fl peek peek-tl" style="--w:clamp(60px,8vw,110px)" data-flower="lily" data-stem="30" data-speed="1.2"></span>
+        </a>
+        <div class="work-meta reveal">
+          <span class="idx">03</span>
+          <h3>A system with <em>soul</em></h3>
+          <p>Design System · Web &amp; Mobile · 2026</p>
+        </div>
+      </article>
+    </section>
+
+    <!-- EXPERIENCES -->
+    <section class="experiences" id="experiences">
+      <header class="section-head reveal">
+        <span class="section-num">(02)</span>
+        <h2>My <em>experiences</em></h2>
+        <span class="section-note">Bangkok, TH</span>
+      </header>
+
+      <p class="about-text" data-split>
+        I'm Bi, a product designer who cares about the <em>tiny details</em> people never consciously notice, but always feel. I design for money moving, screens breathing and flows that simply make sense.
+      </p>
+
+      <!-- PLACEHOLDER roles: replace with real experience. The vine grows as you scroll and each role blooms. -->
+      <div class="xp-wrap">
+        <svg class="vine" aria-hidden="true"><path class="vine-path"/><g class="vine-leaves"></g></svg>
+        <ul class="xp">
+          <li class="glass" data-cursor-grow>
+            <span class="fl xp-flower" style="--w:60px" data-flower="rose" data-stem="0" data-pal="blush"></span>
+            <span class="k">2024 — Now</span>
+            <span class="n">Product Designer</span>
+            <span class="d">Your Company · Fintech</span>
+            <i>↗</i>
+          </li>
+          <li class="glass" data-cursor-grow>
+            <span class="fl xp-flower" style="--w:60px" data-flower="daisy" data-stem="0"></span>
+            <span class="k">2023 — 2024</span>
+            <span class="n">UI / UX Designer</span>
+            <span class="d">Studio or freelance clients</span>
+            <i>↗</i>
+          </li>
+          <li class="glass" data-cursor-grow>
+            <span class="fl xp-flower" style="--w:60px" data-flower="sunflower" data-stem="0"></span>
+            <span class="k">2022</span>
+            <span class="n">Design Intern</span>
+            <span class="d">Where it all started</span>
+            <i>↗</i>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- CONTACT / FOOTER -->
+  <footer class="contact" id="contact">
+    <p class="contact-eyebrow reveal">(03) Contact</p>
+    <h2 class="contact-title">
+      <span class="h-line"><span class="line-inner">Let's grow something</span></span>
+      <span class="h-line"><span class="line-inner"><em>meaningful</em> together.</span></span>
+    </h2>
+
+    <div class="contact-row">
+      <a href="assets/resume.pdf" class="btn glass" data-cursor-grow>Download resume <span>↓</span></a>
+      <a href="mailto:hello@example.com" class="contact-btn glass magnetic" data-cursor-grow><span>Say hello</span></a>
+    </div>
+
+    <!-- The garden grows as you arrive -->
+    <div class="garden" aria-hidden="true">
+      <div class="sun"></div>
+      <div class="layer layer-back">
+        <svg class="hill" viewBox="0 0 1440 300" preserveAspectRatio="none">
+          <path d="M0 110 C260 30 520 60 760 120 C1000 175 1220 150 1440 70 L1440 300 L0 300Z" fill="url(#grass-back)"/>
+          <path d="M0 110 C260 30 520 60 760 120 C1000 175 1220 150 1440 70" fill="none" stroke="#F2FFE6" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="meadow" data-set="fb"></div>
+      </div>
+      <div class="fireflies"></div>
+      <div class="layer layer-front">
+        <svg class="hill" viewBox="0 0 1440 300" preserveAspectRatio="none">
+          <path d="M0 130 C280 80 540 170 840 120 C1100 80 1300 100 1440 130 L1440 300 L0 300Z" fill="url(#grass-front)"/>
+          <path d="M0 130 C280 80 540 170 840 120 C1100 80 1300 100 1440 130" fill="none" stroke="#C9F5B8" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="meadow" data-set="ff"></div>
+      </div>
+    </div>
+
+    <div class="contact-foot">
+      <a href="mailto:hello@example.com" data-cursor-grow>hello@example.com</a>
+      <div class="socials">
+        <a href="#" data-cursor-grow>LinkedIn</a>
+        <a href="#" data-cursor-grow>Behance</a>
+        <a href="#" data-cursor-grow>Instagram</a>
+      </div>
+      <span>© <span data-year>2026</span> Bloomingbifi</span>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

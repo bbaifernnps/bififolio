@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/app-nav.js" defer></script>
+<style>
+  .u-name-cell { display: flex; align-items: center; gap: 10px; }
+  .u-av { width: 32px; height: 32px; border-radius: 9999px; background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 12px; flex-shrink: 0; }
+  .u-disabled { opacity: .55; }
+  .u-created { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .u-created-email { font-size: 13px; color: var(--colors-light-muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .u-created-tag { font-size: 11px; font-weight: 500; color: var(--colors-light-muted-foreground); border: 1px solid var(--colors-light-border); border-radius: 5px; padding: 0 5px; align-self: flex-start; }
+  /* group column: mother-group vs sub-group hint */
+  .u-group { display: flex; align-items: center; gap: 7px; }
+  .u-group svg { width: 15px; height: 15px; color: var(--colors-light-muted-foreground); flex-shrink: 0; }
+  .u-group .u-parent { color: var(--colors-light-muted-foreground); }
+  .u-group .u-mother-tag { font-size: 11px; font-weight: 500; color: var(--colors-light-muted-foreground); border: 1px solid var(--colors-light-border); border-radius: 5px; padding: 1px 6px; }
+  /* inline seat meter shown next to the count */
+  .seat-inline { display: inline-flex; align-items: center; gap: 10px; vertical-align: middle; margin-left: 16px; }
+  .seat-inline .sm-pips { display: inline-flex; gap: 3px; }
+  .seat-inline .sm-pip { width: 18px; height: 7px; border-radius: 9999px; background: var(--colors-light-input); transition: background .15s ease; }
+  .seat-inline .sm-pip.on { background: var(--colors-light-primary); }
+  .seat-inline .sm-pip.on.near { background: var(--status-warning); }
+  .seat-inline .sm-pip.on.full { background: var(--colors-light-foreground); }
+  .seat-inline .sm-txt { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .seat-inline .sm-txt.near { color: var(--status-warning); }
+  /* 'all' summary list of groups near their cap */
+  .cap-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .cap-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; background: var(--colors-light-card); border: 1px solid var(--colors-light-border); border-radius: 8px; padding: 4px 9px; }
+  .cap-chip .status-dot { width: 8px; height: 8px; }
+</style>
+</head>
+<body class="app">
+<div data-app-nav data-active="users" data-scope="Province A · ทั้งหมด"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title" data-i18n="page.users.title">Users</h1>
+      <div class="page-sub"><span id="count-lbl">—</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-default" id="add-btn"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Invite new user</button>
+    </div>
+  </div>
+
+  <!-- Contextual seat notice: only shown when a group is at / near its 4-seat cap -->
+  <div id="seat-notice"></div>
+
+  <div class="panel">
+    <div class="panel-toolbar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="q" placeholder="Search users…" /></div>
+      <div class="spacer"></div>
+      <div class="combobox has-value" data-select-lazy id="group-select" style="width:200px;">
+        <button type="button" class="combobox-trigger"><span class="combobox-value">All groups</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="combobox-popover" hidden>
+          <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search groups / places…" /></div>
+          <div class="combobox-list" role="listbox" id="group-filter-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="dt-wrap">
+      <table class="dt">
+        <thead><tr>
+          <th>Name</th><th>Role</th><th>Position</th><th>Group</th><th>Created by</th><th>Status</th><th class="col-actions"></th>
+        </tr></thead>
+        <tbody id="dt-body"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Add user dialog -->
+<div class="dialog-overlay" id="dlg-add" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title" id="dlg-title">Invite new user</span><span class="dialog-desc" id="dlg-desc">Invite a user into a group.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Assign to group <span class="req">*</span></label>
+        <div class="combobox has-value" data-select-lazy id="dlg-group">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">—</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden>
+            <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search groups / places…" /></div>
+            <div class="combobox-list" role="listbox" id="dlg-grouplist"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Role <span class="req">*</span></label>
+        <div class="combobox has-value" data-select id="dlg-role">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Viewer</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+            <div class="combobox-item is-selected" data-value="viewer"><span class="combobox-item-label">Viewer</span></div>
+            <div class="combobox-item" data-value="editor"><span class="combobox-item-label">Editor</span></div>
+            <div class="combobox-item" data-value="maintainer"><span class="combobox-item-label">Maintainer</span></div>
+            <div class="combobox-item" data-value="admin"><span class="combobox-item-label">Org Admin</span></div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Full name <span class="req">*</span></label><input class="input" id="dlg-name" placeholder="ชื่อ-นามสกุล" /></div>
+      <div class="field"><label class="field-label">Email <span class="req">*</span></label><input class="input" id="dlg-email" placeholder="name@hospital.co.th" /></div>
+      <div class="field"><label class="field-label">Position <span style="font-weight:400;color:var(--colors-light-muted-foreground);">(optional)</span></label><input class="input" id="dlg-position" placeholder="e.g. หัวหน้าฝ่ายพยาบาล" /></div>
+      <div class="seat-hint" id="dlg-seat" style="font-size:13px;color:var(--colors-light-muted-foreground);"></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="dlg-send">Send invite</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // Every group (mother group OR sub-group) has its OWN seat cap — seats do NOT
+  // accumulate up the tree. Default 4 in this mock; the real value is set per
+  // group in the MediGrowth control plane.
+  const CAP = 4;
+  const FOLDER = window.AEDAR_GROUP_FOLDER;
+  const groups = window.AEDAR_buildGroups();            // [{value,label,level,site,node}]
+  const groupBy = Object.fromEntries(groups.map(g => [g.value, g]));
+  const isMother = (v) => groupBy[v] && groupBy[v].site && !groupBy[v].node;
+  const gLabel = (v) => window.AEDAR_groupLabel(v);
+  const parentLabel = (v) => { const g = groupBy[v]; return g && g.node ? g.site : ''; };
+
+  // Users are homed at exactly one group. A mother group (district) has its own
+  // seats separate from its sub-groups. Disabled users still consume a seat.
+  const users = [
+    { name: 'อรุณี ส.', email: 'arunee@agency.example', createdBy: 'provisioning@medigrowth.co.th', role: 'Org Admin', group: 'site:District 1', status: 'active' },
+    { name: 'Somchai P.', email: 'somchai@agency.example', createdBy: 'arunee@agency.example', role: 'Editor', group: 'site:District 1', status: 'active' },
+    { name: 'Kanya W.', email: 'kanya@agency.example', createdBy: 'arunee@agency.example', role: 'Viewer', group: 'site:District 1', status: 'active' },
+    { name: 'Nok T.', email: 'nok@agency.example', createdBy: 'arunee@agency.example', role: 'Viewer', group: 'node:District 1|Hospital B', status: 'active' },
+    { name: 'Wichai R.', email: 'wichai@agency.example', createdBy: 'arunee@agency.example', role: 'Maintainer', group: 'node:District 1|Hospital B', status: 'active' },
+    { name: 'Ploy S.', email: 'ploy@agency.example', createdBy: 'somchai@agency.example', role: 'Viewer', group: 'node:District 1|Hospital B', status: 'active' },
+    { name: 'Anan K.', email: 'anan@agency.example', createdBy: 'somchai@agency.example', role: 'Editor', group: 'node:District 1|Hospital B', status: 'disabled' },
+    { name: 'Malee C.', email: 'malee@agency.example', createdBy: 'arunee@agency.example', role: 'Editor', group: 'node:District 1|Hospital A', status: 'active' },
+    { name: 'Decha T.', email: 'decha@agency.example', createdBy: 'malee@agency.example', role: 'Viewer', group: 'node:District 1|Hospital A', status: 'active' },
+    { name: 'Suda P.', email: 'suda@agency.example', createdBy: 'arunee@agency.example', role: 'Viewer', group: 'node:District 1|School A', status: 'active' },
+    { name: 'Prasit L.', email: 'prasit@agency.example', createdBy: 'provisioning@medigrowth.co.th', role: 'Org Admin', group: 'site:District 2', status: 'active' },
+    { name: 'Nittaya S.', email: 'nittaya@agency.example', createdBy: 'prasit@agency.example', role: 'Maintainer', group: 'node:District 2|Hospital C', status: 'active' },
+    { name: 'Kittisak B.', email: 'kittisak@agency.example', createdBy: 'prasit@agency.example', role: 'Viewer', group: 'node:District 2|Hospital C', status: 'active' },
+    { name: 'Pornchai M.', email: 'pornchai@agency.example', createdBy: 'provisioning@medigrowth.co.th', role: 'Org Admin', group: 'province:Province A', status: 'active' },
+    { name: 'Siriporn K.', email: 'siriporn@agency.example', createdBy: 'pornchai@agency.example', role: 'Editor', group: 'province:Province A', status: 'active' },
+  ];
+  // Optional free-text job title, captured on invite and shown in the table.
+  const POSITIONS = {
+    'arunee@agency.example': 'ผู้อำนวยการกองสาธารณสุข', 'somchai@agency.example': 'หัวหน้างานเวชระเบียน',
+    'kanya@agency.example': 'เจ้าหน้าที่ธุรการ', 'nok@agency.example': 'พยาบาลวิชาชีพ',
+    'wichai@agency.example': 'ช่างเทคนิคอุปกรณ์การแพทย์', 'ploy@agency.example': 'พยาบาลวิชาชีพ',
+    'malee@agency.example': 'หัวหน้าฝ่ายพยาบาล', 'decha@agency.example': 'เวรเปล',
+    'suda@agency.example': 'ครูอนามัยโรงเรียน', 'prasit@agency.example': 'ปลัดอำเภอ',
+    'nittaya@agency.example': 'พยาบาลวิชาชีพชำนาญการ', 'pornchai@agency.example': 'รองนายก อบจ.',
+    'siriporn@agency.example': 'นักวิชาการสาธารณสุข',
+  };
+  users.forEach(u => { if (u.position == null) u.position = POSITIONS[u.email] || ''; });
+  const roleBadge = { 'Org Admin': 'badge-secondary', 'Editor': 'badge-outline', 'Maintainer': 'badge-outline', 'Viewer': 'badge-outline' };
+
+  let scope = sessionStorage.getItem('aedar_scope') || 'all';
+  let q = '';
+
+  // Seats used at an EXACT group (not descendants) — a seat frees only on delete.
+  const seatsUsed = (v) => users.filter(u => u.group === v).length;
+  // Users shown for the current scope. Seats are per-group, so a specific group
+  // shows exactly its own users (matching its meter); 'all' shows everyone.
+  const inScope = (v) => scope === 'all' || scope === v;
+
+  const dlg = {
+    group: document.getElementById('dlg-group'),
+    seat: document.getElementById('dlg-seat'),
+    send: document.getElementById('dlg-send'),
+    email: document.getElementById('dlg-email'),
+    name: document.getElementById('dlg-name'),
+    position: document.getElementById('dlg-position'),
+    role: document.getElementById('dlg-role'),
+    title: document.getElementById('dlg-title'),
+    desc: document.getElementById('dlg-desc'),
+  };
+  window.AEDARCombobox.init(dlg.role);
+  let editingUser = null;
+  let dlgRoleVal = 'viewer', dlgGroupVal = null;
+  dlg.role.addEventListener('change', e => { dlgRoleVal = e.detail.value; });
+
+  // ---- Seat notice (contextual) ----
+  const CONTACT = "AEDARToast.show({title:'Request sent',description:'MediGrowth will follow up about extra seats.'})";
+  function renderSeatNotice() {
+    const box = document.getElementById('seat-notice');
+    box.innerHTML = '';
+    // Seat notices are per-group only — shown when you're inside a specific group
+    // that is near/at its limit. No roll-up on the all-groups page.
+    if (scope === 'all') return;
+    const used = seatsUsed(scope), left = CAP - used;
+    const full = used >= CAP;
+    if (!full && left > 1) return; // plenty of seats — keep the top clean
+    if (full) {
+      // Neutral, informational — the group is simply full, not an error.
+      box.innerHTML = `<div class="alert" style="margin-bottom:16px;">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="alert-body">
+          <span class="alert-title">All seats in use</span>
+          <span class="alert-desc">${gLabel(scope)} is using all ${CAP} of its seats. Extra users for this group are added by MediGrowth.</span>
+        </div></div>`;
+      return;
+    }
+    box.innerHTML = `<div class="alert soft warning" style="margin-bottom:16px;">
+      <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div class="alert-body">
+        <span class="alert-title">Almost full — 1 seat left</span>
+        <span class="alert-desc">${gLabel(scope)} has used ${used} of ${CAP} self-serve seats.</span>
+      </div></div>`;
+  }
+
+  function seatMeterHTML() {
+    if (scope === 'all') return '';
+    const used = seatsUsed(scope);
+    const state = used >= CAP ? 'full' : (used >= CAP - 1 ? 'near' : '');
+    let pips = '';
+    for (let i = 0; i < CAP; i++) pips += `<span class="sm-pip ${i < used ? 'on ' + state : ''}"></span>`;
+    const txt = used >= CAP ? 'Full · ' + used + '/' + CAP : used + '/' + CAP + ' seats';
+    return `<span class="sep"></span><span class="seat-inline"><span class="sm-pips">${pips}</span><span class="sm-txt ${state}">${txt}</span></span>`;
+  }
+
+  // ---- Table ----
+  // Who provisioned the account: MediGrowth for org admins created at onboarding,
+  // otherwise the org admin who sent the invite.
+  const MG_ADMIN = 'provisioning@medigrowth.co.th';
+  function createdCell(u) {
+    const mg = u.createdBy === MG_ADMIN;
+    return '<div class="u-created"><span class="u-created-email">' + u.createdBy + '</span>' +
+      (mg ? '<span class="u-created-tag">MediGrowth</span>' : '') + '</div>';
+  }
+
+  function render() {
+    const data = users.filter(u => inScope(u.group) && (!q || (u.name + u.email + u.role + (u.position || '') + u.createdBy + gLabel(u.group)).toLowerCase().includes(q)));
+    const scopeName = scope === 'all' ? 'all groups' : gLabel(scope);
+    document.getElementById('count-lbl').innerHTML =
+      data.length + ' user' + (data.length === 1 ? '' : 's') + ' in ' + scopeName + seatMeterHTML();
+
+    document.getElementById('dt-body').innerHTML = data.map(u => {
+      const init = u.name.replace(/[^A-Za-zก-๙]/g, '').slice(0, 2);
+      const mother = isMother(u.group);
+      const parent = parentLabel(u.group);
+      const groupCell = `<div class="u-group">${FOLDER}<span>${mother ? '' : (parent ? '<span class="u-parent">' + parent + ' · </span>' : '')}${gLabel(u.group)}</span></div>`;
+      return `<tr class="${u.status === 'disabled' ? 'u-disabled' : ''}">
+        <td><div class="u-name-cell"><span class="u-av">${init}</span><div class="dt-cell-stack"><span class="dt-primary">${u.name}</span><span class="dt-sub">${u.email}</span></div></div></td>
+        <td><span class="badge ${roleBadge[u.role]}">${u.role}</span></td>
+        <td>${u.position ? u.position : '<span class="dt-sub">—</span>'}</td>
+        <td>${groupCell}</td>
+        <td>${createdCell(u)}</td>
+        <td>${u.status === 'active' ? '<span class="badge badge-status badge-operational"><span class="badge-dot"></span>Active</span>' : (u.status === 'invited' ? '<span class="badge badge-status badge-validate"><span class="badge-dot"></span>Invited</span>' : '<span class="badge badge-status badge-offline"><span class="badge-dot"></span>Disabled</span>')}</td>
+        <td class="col-actions"><span class="dt-actions"><button class="btn btn-ghost btn-icon" aria-label="Actions" data-menu-btn data-email="${u.email}"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></span></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7"><div class="empty-state"><div class="empty-desc">No users in this group.</div></div></td></tr>';
+
+    document.querySelectorAll('#dt-body [data-menu-btn]').forEach(btn => btn.addEventListener('click', () => {
+      const u = users.find(x => x.email === btn.dataset.email);
+      window.AEDARMenu.open(btn, [
+        { label: 'Edit role & group', action: 'edit' },
+        { label: u.status === 'active' ? 'Disable user' : 'Enable user', action: 'toggle' },
+        { separator: true },
+        { label: 'Remove user', destructive: true, action: 'remove' },
+      ], (a) => {
+        if (a === 'toggle') { u.status = u.status === 'active' ? 'disabled' : 'active'; AEDARToast.show({ title: 'User ' + (u.status === 'active' ? 'enabled' : 'disabled') }); }
+        else if (a === 'remove') { users.splice(users.indexOf(u), 1); AEDARToast.show({ variant: 'error', title: 'User removed', description: 'A seat is now free in ' + gLabel(u.group) + '.' }); }
+        else if (a === 'edit') openDlg('edit', u);
+        refresh();
+      });
+    }));
+  }
+
+  // ---- Add button state (disabled when the scoped group is full) ----
+  function refreshAddBtn() {
+    const addBtn = document.getElementById('add-btn');
+    const full = scope !== 'all' && seatsUsed(scope) >= CAP;
+    addBtn.disabled = full;
+    addBtn.title = full ? 'Seat limit reached — contact MediGrowth to add seats' : '';
+  }
+
+  function refresh() { renderSeatNotice(); refreshAddBtn(); render(); }
+
+  // ---- Scope sync: top-nav group picker <-> in-panel group filter ----
+  function setCbValue(root, v) { if (root && typeof root.setValue === 'function') root.setValue(v, true); }
+  function applyScope(v) {
+    scope = v;
+    sessionStorage.setItem('aedar_scope', v);
+    setCbValue(document.getElementById('group-select'), v);
+    setCbValue(document.querySelector('.scope-slot .combobox'), v);
+    refresh();
+  }
+  // Build the in-panel filter from the shared hierarchy, then init + wire it.
+  document.getElementById('group-filter-list').innerHTML = window.AEDAR_groupOptionsHTML(scope);
+  window.AEDARCombobox.init(document.getElementById('group-select'));
+  document.getElementById('group-select').addEventListener('change', e => applyScope(e.detail.value));
+  window.addEventListener('aedar:scope', e => applyScope(e.detail.value));
+  document.getElementById('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); render(); });
+
+  // ---- Add user dialog ----
+  // Group options exclude the province-level 'all' (a user must land on a real group).
+  document.getElementById('dlg-grouplist').innerHTML =
+    groups.filter(g => g.value !== 'all').map(g =>
+      `<div class="combobox-item lvl-${g.level}" data-value="${g.value}">${FOLDER}<span class="combobox-item-label">${g.label}</span></div>`
+    ).join('');
+  window.AEDARCombobox.init(dlg.group);
+
+  function dlgUpdate(v) {
+    const used = seatsUsed(v), left = CAP - used, full = used >= CAP;
+    dlg.seat.innerHTML = full
+      ? `<span style="color:var(--status-offline)">No seats left in ${gLabel(v)} — extra users must be created by MediGrowth.</span>`
+      : `${used} of ${CAP} seats used in ${gLabel(v)}${left === 1 ? ' · last seat' : ''}.`;
+    // Editing a user already in this group doesn't consume a new seat.
+    const editingHere = editingUser && editingUser.group === v;
+    dlg.send.disabled = full && !editingHere;
+    dlg.send.title = (full && !editingHere) ? 'Group is at its seat limit' : '';
+  }
+  dlg.group.addEventListener('change', e => { dlgGroupVal = e.detail.value; dlgUpdate(e.detail.value); });
+
+  document.getElementById('add-btn').addEventListener('click', () => {
+    if (document.getElementById('add-btn').disabled) return;
+    // default the dialog's group to the current scope (or the first real group)
+    const def = (scope !== 'all' && groupBy[scope]) ? scope : groups.find(g => g.value !== 'all').value;
+    openDlg('add', null, def);
+  });
+  // Shared dialog for both Add and Edit. Edit prefills all fields from the user.
+  function openDlg(mode, u, defGroup) {
+    editingUser = mode === 'edit' ? u : null;
+    if (mode === 'edit') {
+      dlg.title.textContent = 'Edit user';
+      dlg.desc.textContent = 'Update this user’s role or group.';
+      dlg.send.textContent = 'Save changes';
+      dlg.email.value = u.email;
+      dlg.email.disabled = true;
+      dlg.name.value = u.name;
+      dlg.position.value = u.position || '';
+      dlg.role.setValue(u.role.toLowerCase() === 'org admin' ? 'admin' : u.role.toLowerCase(), true);
+      dlgRoleVal = u.role.toLowerCase() === 'org admin' ? 'admin' : u.role.toLowerCase();
+      dlg.group.setValue(u.group, true);
+      dlgGroupVal = u.group;
+      dlgUpdate(u.group);
+    } else {
+      dlg.title.textContent = 'Invite new user';
+      dlg.desc.textContent = 'Invite a user into a group.';
+      dlg.send.textContent = 'Send invite';
+      dlg.email.value = '';
+      dlg.email.disabled = false;
+      dlg.name.value = '';
+      dlg.position.value = '';
+      dlg.role.setValue('viewer', true);
+      dlgRoleVal = 'viewer';
+      dlg.group.setValue(defGroup, true);
+      dlgGroupVal = defGroup;
+      dlgUpdate(defGroup);
+    }
+    window.AEDARDialog.open('dlg-add');
+  }
+  dlg.send.addEventListener('click', () => {
+    if (dlg.send.disabled) return;
+    window.AEDARDialog.close('dlg-add');
+    if (editingUser) {
+      const roleMap = { viewer: 'Viewer', editor: 'Editor', maintainer: 'Maintainer', admin: 'Org Admin' };
+      editingUser.role = roleMap[dlgRoleVal] || editingUser.role;
+      editingUser.group = dlgGroupVal;
+      editingUser.name = dlg.name.value.trim() || editingUser.name;
+      editingUser.position = dlg.position.value.trim();
+      editingUser = null;
+      refresh();
+      AEDARToast.show({ variant: 'success', title: 'User updated' });
+    } else {
+      const roleMap = { viewer: 'Viewer', editor: 'Editor', maintainer: 'Maintainer', admin: 'Org Admin' };
+      const name = dlg.name.value.trim() || 'New user';
+      users.push({ name, email: dlg.email.value.trim() || 'new@agency.example', position: dlg.position.value.trim(), createdBy: 'arunee@agency.example', role: roleMap[dlgRoleVal] || 'Viewer', group: dlgGroupVal, status: 'invited' });
+      refresh();
+      AEDARToast.show({ variant: 'success', title: 'Invite sent', description: name + ' \u00b7 ' + (roleMap[dlgRoleVal] || 'Viewer') });
+    }
+  });
+
+  refresh();
+  setCbValue(document.getElementById('group-select'), scope);
+});
+</script>
+</body>
+</html>

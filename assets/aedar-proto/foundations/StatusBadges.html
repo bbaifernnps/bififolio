@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Status badges</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .card { background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 12px; padding: 28px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+  .row.lg { gap: 20px; }
+
+  .status-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--colors-light-border); border-radius: 12px; overflow: hidden; }
+  .status-cell { background: var(--colors-light-background); padding: 22px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .status-cell .meta { font-size: 12px; line-height: 1.5; color: var(--colors-light-muted-foreground); }
+  .status-cell .meta b { color: var(--colors-light-foreground); font-weight: 500; display: block; margin-bottom: 2px; }
+  .status-cell .val { font-family: var(--font-mono); font-size: 11px; color: var(--colors-light-muted-foreground); }
+
+  .legend { display: flex; flex-direction: column; gap: 12px; }
+  .legend-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .legend-row .lbl { color: var(--colors-light-foreground); }
+  .legend-row .desc { color: var(--colors-light-muted-foreground); font-size: 13px; }
+
+  .navchip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; background: var(--colors-light-muted); font-size: 14px; font-weight: 500; }
+  .navchip svg { width: 16px; height: 16px; color: var(--colors-light-muted-foreground); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Status badges</h1>
+    <p class="lede">How device state, counts and generic labels are shown. Base badge is <strong>h20 / radius 8 / 12px medium</strong>. Device status uses a <strong>soft pill + colored dot</strong> drawn from the AED status colors; counts use a circular badge. All map to the same tokens as the monitoring pins.</p>
+  </header>
+
+  <!-- Device status -->
+  <section>
+    <div class="sec-head"><h2>Device status — AED</h2><span class="note">soft pill + dot · the primary form</span></div>
+    <div class="status-grid">
+      <div class="status-cell">
+        <span class="badge badge-status badge-operational"><span class="badge-dot"></span>Operational</span>
+        <div class="meta"><b>Online · all good</b>Reporting normally.</div>
+        <span class="val">--status-operational</span>
+      </div>
+      <div class="status-cell">
+        <span class="badge badge-status badge-warning"><span class="badge-dot"></span>Warning</span>
+        <div class="meta"><b>Needs attention</b>Low battery, pads expiring.</div>
+        <span class="val">--status-warning</span>
+      </div>
+      <div class="status-cell">
+        <span class="badge badge-status badge-validate"><span class="badge-dot"></span>To validate</span>
+        <div class="meta"><b>Pending validation</b>Newly added, unconfirmed.</div>
+        <span class="val">--status-validate</span>
+      </div>
+      <div class="status-cell">
+        <span class="badge badge-status badge-in-use"><span class="badge-dot"></span>In use</span>
+        <div class="meta"><b>Rescue in progress</b>Cabinet opened / active event.</div>
+        <span class="val">--status-in-use</span>
+      </div>
+      <div class="status-cell">
+        <span class="badge badge-status badge-offline"><span class="badge-dot"></span>Offline</span>
+        <div class="meta"><b>No signal</b>Unreachable for &gt; 24h.</div>
+        <span class="val">--status-offline</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solid + dot-only -->
+  <section>
+    <div class="sec-head"><h2>Emphasis &amp; compact forms</h2><span class="note">solid pill · bare dot</span></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:24px;">
+      <div class="row lg">
+        <span class="badge badge-solid badge-operational">Operational</span>
+        <span class="badge badge-solid badge-warning">Warning</span>
+        <span class="badge badge-solid badge-validate">To validate</span>
+        <span class="badge badge-solid badge-in-use">In use</span>
+        <span class="badge badge-solid badge-offline">Offline</span>
+      </div>
+      <div class="row lg">
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;"><span class="status-dot operational"></span> Operational</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;"><span class="status-dot warning"></span> Warning</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;"><span class="status-dot validate"></span> To validate</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;"><span class="status-dot in-use"></span> In use</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;font-size:14px;"><span class="status-dot offline"></span> Offline</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Generic badge types -->
+  <section>
+    <div class="sec-head"><h2>Generic badge types</h2><span class="note">from the Badge component set</span></div>
+    <div class="card">
+      <div class="row lg">
+        <span class="badge badge-default">Default</span>
+        <span class="badge badge-secondary">Secondary</span>
+        <span class="badge badge-outline">Outline</span>
+        <span class="badge badge-destructive">Destructive</span>
+        <span class="badge badge-secondary"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Battery -->
+  <section>
+    <div class="sec-head"><h2>Battery levels</h2><span class="note">bar + badge · reuses status ramp</span></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:22px;">
+      <div class="row lg">
+        <span class="battery"><span class="battery-track"><span class="battery-fill" style="width:92%;background:var(--battery-good)"></span></span><span class="battery-pct">92%</span></span>
+        <span class="badge badge-status badge-operational"><span class="badge-dot"></span>Good</span>
+      </div>
+      <div class="row lg">
+        <span class="battery"><span class="battery-track"><span class="battery-fill" style="width:34%;background:var(--battery-low)"></span></span><span class="battery-pct">34%</span></span>
+        <span class="badge badge-status badge-warning"><span class="badge-dot"></span>Low — order soon</span>
+      </div>
+      <div class="row lg">
+        <span class="battery"><span class="battery-track"><span class="battery-fill" style="width:12%;background:var(--battery-critical)"></span></span><span class="battery-pct">12%</span></span>
+        <span class="badge badge-status badge-in-use"><span class="badge-dot"></span>Critical — replace now</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Count badges -->
+  <section>
+    <div class="sec-head"><h2>Count badges</h2><span class="note">nav counters · alerts · tab counters</span></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:22px;">
+      <div class="row lg">
+        <span class="navchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Alerts <span class="badge-count is-destructive">3</span></span>
+        <span class="navchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Devices <span class="badge-count is-muted">42</span></span>
+        <span class="navchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Users <span class="badge-count">8</span></span>
+      </div>
+      <div class="row lg">
+        <span class="badge-count is-inverted">5</span>
+        <span class="badge-count is-secondary">12</span>
+        <span class="dt-sub" style="font-size:12px;">Inverted (active tab) &amp; secondary (inactive tab) counters</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tab counter preview -->
+  <section>
+    <div class="sec-head"><h2>Tab counters</h2><span class="note">active = inverted · inactive = secondary</span></div>
+    <div class="card">
+      <div style="display:inline-flex;background:var(--colors-light-secondary);border-radius:10px;padding:4px;gap:2px;">
+        <span style="display:inline-flex;align-items:center;gap:8px;background:var(--colors-light-background);border-radius:8px;padding:8px 14px;font-weight:500;font-size:15px;color:var(--colors-light-foreground);box-shadow:0 1px 2px rgba(0,0,0,.06);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+          Subgroups <span class="badge-count is-inverted">5</span>
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:8px;border-radius:8px;padding:8px 14px;font-weight:500;font-size:15px;color:var(--colors-light-foreground);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg>
+          AED Devices <span class="badge-count is-secondary">12</span>
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:8px;border-radius:8px;padding:8px 14px;font-weight:500;font-size:15px;color:var(--colors-light-foreground);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Users <span class="badge-count is-secondary">6</span>
+        </span>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

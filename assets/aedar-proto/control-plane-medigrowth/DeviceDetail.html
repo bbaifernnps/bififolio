@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR Control Plane — Device detail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/cp-inventory-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/cp-nav.js" defer></script>
+<style>
+  html { overflow-y: scroll; }
+  a { color: var(--colors-light-primary); } a:hover { color: var(--colors-light-primary); }
+  .crumbs { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--colors-light-muted-foreground); margin-bottom: 16px; }
+  .crumbs a { color: var(--colors-light-muted-foreground); text-decoration: none; }
+  .crumbs a:hover { color: var(--colors-light-foreground); }
+  .crumbs svg { width: 14px; height: 14px; }
+  .dev-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+  .dev-title-row { display: flex; align-items: center; gap: 12px; }
+  .dev-sn { font-family: var(--font-mono); font-size: 24px; font-weight: 500; letter-spacing: -0.01em; }
+  .dev-meta { font-size: 14px; color: var(--colors-light-muted-foreground); margin-top: 5px; display: flex; align-items: center; gap: 8px; }
+  .tele-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 1000px) { .tele-grid { grid-template-columns: repeat(2, 1fr); } }
+  .tele { border: 1px solid var(--colors-light-border); border-radius: 12px; background: var(--colors-light-card); padding: 18px; }
+  .tele .t-label { font-size: 13px; color: var(--colors-light-muted-foreground); display: flex; align-items: center; gap: 7px; }
+  .tele .t-label svg { width: 15px; height: 15px; }
+  .tele .t-value { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin-top: 10px; }
+  .tele .t-sub { font-size: 13px; color: var(--colors-light-muted-foreground); margin-top: 4px; }
+  .t-bar { height: 6px; border-radius: 9999px; background: var(--colors-light-input); overflow: hidden; margin-top: 12px; }
+  .t-bar > i { display: block; height: 100%; border-radius: 9999px; }
+  .t-chip { display: inline-flex; align-items: center; margin-top: 11px; font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 9999px; background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); }
+  .t-chip.due { background: var(--status-warning-soft); color: rgb(146,116,0); }
+  .t-chip.ok { background: var(--status-operational-soft); color: rgb(21,128,61); }
+  .cols { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+  .info-row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--colors-light-border); font-size: 14px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .k { color: var(--colors-light-muted-foreground); }
+  .info-row .v { font-weight: 500; text-align: right; }
+  .info-row .v.mono { font-family: var(--font-mono); font-weight: 400; }
+  .info-row .v.due { color: rgb(146,116,0); }
+  .info-row .v.muted { font-weight: 400; color: var(--colors-light-muted-foreground); }
+  .field[hidden] { display: none; }
+</style>
+</head>
+<body class="app">
+<div data-cp-nav data-cp-mode="mg" data-active="inventory"></div>
+
+<main class="app-page">
+  <div class="crumbs">
+    <a href="Inventory.html">Device inventory</a>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    <span id="crumb-sn">Device</span>
+  </div>
+
+  <div class="dev-head">
+    <div style="flex-grow:1;">
+      <div class="dev-title-row">
+        <span class="dev-sn" id="h-sn"></span>
+        <span class="badge badge-status" id="h-badge"></span>
+      </div>
+      <div class="dev-meta"><span id="h-model"></span><span class="sep">·</span><span id="h-owner"></span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-ghost btn-icon" aria-label="Actions" id="btn-menu"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+    </div>
+  </div>
+
+  <div class="tele-grid" id="tele-grid"></div>
+
+  <div class="cols">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="ui-card">
+        <div class="ui-card-header"><div class="ui-card-heading"><span class="ui-card-title">Hardware record</span><span class="ui-card-desc">Serial and lifecycle data.</span></div></div>
+        <div class="ui-card-body" id="hw-rows" style="padding-top:2px;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="ui-card">
+        <div class="ui-card-header"><div class="ui-card-heading"><span class="ui-card-title">Assignment</span><span class="ui-card-desc">Current customer and installation record.</span></div></div>
+        <div class="ui-card-body" id="asg-rows" style="padding-top:2px;"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Assign / reassign -->
+<div class="dialog-overlay" id="dlg-assign" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title" id="asg-title">Assign device</span><span class="dialog-desc">Bind this serial to a customer group.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Customer <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="a-cust">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select customer…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden><div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search customers…" /></div><div class="combobox-list" role="listbox">
+            <div class="combobox-item" data-value="Province A">โครงการ AED Province A</div>
+            <div class="combobox-item" data-value="Province B">โครงการ AED Province B</div>
+            <div class="combobox-item" data-value="Province C">โครงการ AED Province C</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field" id="a-group-field" hidden><label class="field-label">Group <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="a-group">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select group…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden><div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search groups…" /></div><div class="combobox-list" role="listbox" id="a-group-list"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="asg-save">Save assignment</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Remove confirmation -->
+<div class="dialog-overlay" id="dlg-remove" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Remove device from pool?</span><span class="dialog-desc">De-registers this serial from the pool.</span></div>
+    <div class="dialog-body"><div class="alert soft warning" id="rm-note" hidden><svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg><div class="alert-body"><span class="alert-desc" id="rm-note-txt"></span></div></div></div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-destructive" id="rm-go">Remove device</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const units = window.AEDAR_CP_UNITS || [];
+  const GROUPS = window.AEDAR_CP_GROUPS || {};
+  const sn = new URLSearchParams(location.search).get('sn');
+  const u = units.find(x => x.sn === sn) || units[0];
+  // Telemetry, when the unit is deployed, comes from the same AED feed the
+  // customer app reads — the control plane never edits it, only reads it.
+  const tel = (window.AEDAR_DEVICES || []).find(x => x.sn === u.sn) || null;
+  const NOW = new Date('2026-07-11T09:30:00');
+  const days = (s) => Math.round((new Date(s) - NOW) / 86400000);
+
+  function paintHeader() {
+    document.getElementById('crumb-sn').textContent = u.sn;
+    document.getElementById('h-sn').textContent = u.sn;
+    document.getElementById('h-model').textContent = 'AED ' + u.model;
+    document.getElementById('h-owner').textContent = u.cust ? u.cust + ' · ' + u.group : 'Unassigned — in MediGrowth pool';
+    const b = document.getElementById('h-badge');
+    b.className = 'badge badge-status ' + (u.cust ? 'badge-operational' : 'badge-warning');
+    b.innerHTML = '<span class="badge-dot"></span>' + (u.cust ? 'Assigned' : 'Unassigned');
+    document.title = 'AEDAR Control Plane — ' + u.sn;
+  }
+
+  function chip(n) {
+    if (n <= 45) return '<span class="t-chip due">' + n + ' days left</span>';
+    if (n <= 120) return '<span class="t-chip">' + n + ' days left</span>';
+    return '<span class="t-chip ok">' + Math.round(n / 30) + ' months left</span>';
+  }
+  function paintTele() {
+    const g = window.AEDAR_batteryGuarantee(u.battery);
+    const col = window.aedarBatteryColor(u.battery);
+    const cards = [
+      { lbl: 'Battery', ico: '<rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/>',
+        val: u.battery + '%', col, sub: '≈ ' + g.short + ' guaranteed use left',
+        extra: '<div class="t-bar"><i style="width:' + u.battery + '%;background:' + col + '"></i></div>' },
+      { lbl: 'Electrode pads', ico: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+        val: tel ? tel.electrodeExp : '—', sub: tel ? 'Expiry date' : 'Set on first deployment',
+        extra: tel ? chip(days(tel.electrodeExp)) : '' },
+      { lbl: 'Data card (SIM)', ico: '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01"/>',
+        val: tel ? tel.simExp : '—', sub: tel ? 'Expiry date' : 'Activated on assignment',
+        extra: tel ? chip(days(tel.simExp)) : '' },
+      { lbl: 'Last report', ico: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/>',
+        val: tel ? (tel.status === 'offline' ? 'Offline' : (tel.nettype || '—')) : 'Never',
+        sub: tel ? tel.lastReport : 'No telemetry yet — unit not deployed', extra: '' },
+    ];
+    document.getElementById('tele-grid').innerHTML = cards.map(c =>
+      '<div class="tele"><div class="t-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + c.ico + '</svg>' + c.lbl + '</div>' +
+      '<div class="t-value"' + (c.col ? ' style="color:' + c.col + '"' : '') + '>' + c.val + '</div>' +
+      '<div class="t-sub">' + c.sub + '</div>' + c.extra + '</div>').join('');
+  }
+
+  const row = (k, v, cls) => '<div class="info-row"><span class="k">' + k + '</span><span class="v ' + (cls || '') + '">' + v + '</span></div>';
+  function paintRows() {
+    const g = window.AEDAR_batteryGuarantee(u.battery);
+    document.getElementById('hw-rows').innerHTML = [
+      row('Serial number (SN)', u.sn, 'mono'),
+      row('Model', 'AED ' + u.model),
+      row('Registered', '18 Jan 2026 · provisioning@medigrowth.co.th'),
+      row('Battery guarantee', '≈ ' + g.long + ' of 3 years left', g.months <= 12 ? 'due' : ''),
+      row('Battery replacements', tel ? String(tel.batterytimes) : '0'),
+      row('Rescue uses', tel ? String(tel.rescues) : '0'),
+    ].join('');
+    document.getElementById('asg-rows').innerHTML = [
+      row('Customer', u.cust || 'Unassigned', u.cust ? '' : 'muted'),
+      row('Group', u.group || '-', u.group ? '' : 'muted'),
+      row('Install site', tel ? tel.address : '-', tel ? '' : 'muted'),
+      row('Device name', tel ? tel.name : '-', tel ? '' : 'muted'),
+    ].join('');
+  }
+
+  function render() { paintHeader(); paintTele(); paintRows(); }
+
+  // ---- Assign dialog (customer → group cascade) ----
+  let aCust = '', aGroup = '';
+  function resetGroup() {
+    aGroup = '';
+    const list = document.getElementById('a-group-list');
+    const root = document.getElementById('a-group');
+    const val = root.querySelector('.combobox-value');
+    val.textContent = 'Select group…'; root.classList.remove('has-value');
+    document.getElementById('a-group-field').hidden = !aCust;
+    list.innerHTML = (GROUPS[aCust] || []).map(g => '<div class="combobox-item" data-value="' + g + '"><span class="combobox-item-label">' + g + '</span></div>').join('');
+    list.querySelectorAll('.combobox-item[data-value]').forEach(it => it.addEventListener('click', () => {
+      aGroup = it.dataset.value;
+      list.querySelectorAll('.combobox-item').forEach(o => o.classList.remove('is-selected'));
+      it.classList.add('is-selected');
+      val.textContent = aGroup; root.classList.add('has-value');
+      list.closest('.combobox-popover').hidden = true;
+    }));
+  }
+  document.getElementById('a-cust').addEventListener('change', (e) => { aCust = e.detail.value; resetGroup(); });
+  function openAssign() {
+    document.getElementById('asg-title').textContent = u.cust ? 'Reassign device' : 'Assign device';
+    document.getElementById('asg-sn').textContent = u.sn;
+    aCust = u.cust || '';
+    const cv = document.querySelector('#a-cust .combobox-value');
+    cv.textContent = aCust || 'Select customer…';
+    document.querySelector('#a-cust').classList.toggle('has-value', !!aCust);
+    document.querySelectorAll('#a-cust .combobox-item').forEach(i => i.classList.toggle('is-selected', i.dataset.value === aCust));
+    resetGroup();
+    window.AEDARDialog.open('dlg-assign');
+  }
+  document.getElementById('asg-save').addEventListener('click', () => {
+    if (!aCust) { AEDARToast.show({ variant: 'error', title: 'Pick a customer' }); return; }
+    if (!aGroup) { AEDARToast.show({ variant: 'error', title: 'Pick a group' }); return; }
+    u.cust = aCust; u.group = aGroup;
+    window.AEDARDialog.close(document.getElementById('dlg-assign'));
+    AEDARToast.show({ variant: 'success', title: 'Device assigned', description: u.sn + ' → ' + aCust + ' · ' + aGroup });
+    render();
+  });
+  document.getElementById('rm-go').addEventListener('click', () => {
+    const i = units.findIndex(x => x.sn === u.sn);
+    if (i > -1) units.splice(i, 1);
+    location.href = 'Inventory.html';
+  });
+
+  function act(a) {
+    if (a === 'reassign') openAssign();
+    else if (a === 'unassign') { u.cust = ''; u.group = ''; AEDARToast.show({ variant: 'error', title: 'Device unassigned', description: u.sn }); render(); }
+    else if (a === 'remove') {
+      const n = document.getElementById('rm-note');
+      n.hidden = !u.cust;
+      if (u.cust) document.getElementById('rm-note-txt').textContent = 'It is currently assigned to ' + u.cust + ' · ' + u.group + ' — removing also unassigns it.';
+      window.AEDARDialog.open('dlg-remove');
+    }
+  }
+  document.getElementById('btn-menu').addEventListener('click', () => {
+    const btn = document.getElementById('btn-menu');
+    window.AEDARMenu.open(btn, u.cust ? [
+      { label: 'Reassign', action: 'reassign' },
+      { label: 'Unassign', destructive: true, action: 'unassign' },
+      { separator: true },
+      { label: 'Remove from pool', destructive: true, action: 'remove' },
+    ] : [
+      { label: 'Assign to customer', action: 'reassign' },
+      { separator: true },
+      { label: 'Remove from pool', destructive: true, action: 'remove' },
+    ], act);
+  });
+
+  render();
+});
+</script>
+</body>
+</html>

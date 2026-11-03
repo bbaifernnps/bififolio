@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Nav shell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 700px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .frame { border: 1px solid var(--colors-light-border); border-radius: 12px; overflow: hidden; background: var(--colors-light-background); }
+  .frame .canvas { height: 120px; background: var(--colors-light-muted); display: flex; align-items: center; justify-content: center; color: var(--colors-light-muted-foreground); font-size: 13px; }
+  .tag-note { font-size: 12px; color: var(--colors-light-muted-foreground); margin-top: 10px; }
+  .tag-note code { font-family: var(--font-mono); background: var(--colors-light-background); border: 1px solid var(--colors-light-border); padding: 1px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Nav shell</h1>
+    <p class="lede">One shared top-bar <strong>shell</strong> — Healix wordmark, primary nav, notification bell, account avatar — used by both apps. The nav <strong>content differs</strong>: the Customer App adds an <strong>org-node scope filter</strong> to narrow within a hospital; the Control Plane swaps in a <strong>customer switcher</strong> to change tenant. Everything below is live.</p>
+  </header>
+
+  <!-- Shared shell -->
+  <section>
+    <div class="sec-head"><h2>Shared shell</h2><span class="note">logo · nav · bell · avatar</span></div>
+    <div class="frame" style="overflow:visible;">
+      <div class="appbar" style="border-radius:12px 12px 0 0;">
+        <div class="appbar-brand"><img class="appbar-logo" src="../components/assets/healix-wordmark.svg" alt="Healix" /></div>
+        <nav class="appbar-nav">
+          <a class="nav-item active" href="#">Monitoring</a>
+          <div class="nav-menu">
+            <button class="nav-item has-menu" aria-haspopup="true">Asset Management <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+            <div class="nav-popover">
+              <div class="nav-popover-inner">
+                <div class="nav-popover-grid">
+                  <a class="nav-menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg><span><span class="nml-label">Device list</span><span class="nml-desc">All AED units, searchable and filterable.</span></span></a>
+                  <a class="nav-menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span><span class="nml-label">Map view</span><span class="nml-desc">Status-colored pins across all sites.</span></span></a>
+                  <a class="nav-menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg><span><span class="nml-label">Alerts</span><span class="nml-desc">Open maintenance &amp; full history.</span></span></a>
+                  <a class="nav-menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2M6 10v4M10 10v4"/></svg><span><span class="nml-label">Battery &amp; telemetry</span><span class="nml-desc">Charge, pads and connectivity health.</span></span></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <span class="appbar-spacer"></span>
+        <div class="appbar-right">
+          <span class="bell-wrap">
+            <button class="btn btn-ghost btn-icon" aria-label="Notifications"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button>
+            <span class="badge-count is-destructive">3</span>
+          </span>
+          <div data-menu style="position:relative;">
+            <button class="avatar menu-trigger" aria-label="Account">อร</button>
+            <div class="menu-popover" hidden>
+              <div class="menu-label">อรุณี · Org Admin</div>
+              <div class="menu-item" data-action="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="menu-item-label">Profile</span></div>
+              <div class="menu-item" data-action="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="menu-item-label">Account settings</span></div>
+              <div class="menu-sep"></div>
+              <div class="menu-item" data-action="lang"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span class="menu-item-label">ภาษา · ไทย</span></div>
+              <div class="menu-sep"></div>
+              <div class="menu-item is-destructive" data-action="logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="menu-item-label">Log out</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="canvas" style="border-radius:0 0 12px 12px;">page content</div>
+    </div>
+    <p class="tag-note">Bar <code>h64</code> · border-bottom · nav item active = <code>secondary</code> fill + <code>secondary-foreground</code> text · bell count top-right.</p>
+  </section>
+
+  <!-- Customer App nav -->
+  <section>
+    <div class="sec-head"><h2>Customer App nav</h2><span class="note">+ org-node scope filter</span></div>
+    <div class="frame">
+      <div class="appbar">
+        <div class="appbar-brand"><img class="appbar-logo" src="../components/assets/healix-wordmark.svg" alt="Healix" /></div>
+        <div class="scope-divider"></div>
+        <div class="scope-slot">
+          <div class="combobox has-value" data-combobox>
+            <button type="button" class="combobox-trigger" aria-haspopup="listbox">
+              <svg class="btn-icon-glyph" style="width:16px;height:16px;color:var(--colors-light-muted-foreground);flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+              <span class="combobox-value">Province A · Hospital A</span>
+              <svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg>
+            </button>
+            <div class="combobox-popover" hidden>
+              <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Filter org nodes…" /></div>
+              <div class="combobox-list" role="listbox">
+                <div class="combobox-item" data-value="all">ทั้งProvince A</div>
+                <div class="combobox-item lvl-1" data-value="er"><svg class="tree-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>Hospital A</div>
+                <div class="combobox-item lvl-1 is-selected" data-value="icu"><svg class="tree-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>Hospital B</div>
+                <div class="combobox-item lvl-2" data-value="icu-a">ICU Bay A</div>
+                <div class="combobox-item lvl-2" data-value="icu-b">ICU Bay B</div>
+                <div class="combobox-item lvl-1" data-value="lobby"><svg class="tree-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>City Hall</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <nav class="appbar-nav">
+          <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+          <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>Map</a>
+          <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg>Devices</a>
+          <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg>Alerts</a>
+        </nav>
+        <span class="appbar-spacer"></span>
+        <div class="appbar-right">
+          <span class="bell-wrap"><button class="btn btn-ghost btn-icon" aria-label="Notifications"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button><span class="badge-count is-destructive">3</span></span>
+          <button class="avatar" aria-label="Account">อร</button>
+        </div>
+      </div>
+      <div class="canvas">scoped to <strong style="color:var(--colors-light-foreground);margin:0 4px;">Hospital B</strong></div>
+    </div>
+  </section>
+
+  <!-- Control Plane nav -->
+  <section>
+    <div class="sec-head"><h2>Control Plane nav</h2><span class="note">+ customer switcher (MediGrowth-internal)</span></div>
+    <div class="frame">
+      <div class="appbar">
+        <div class="appbar-brand"><img class="appbar-logo" src="../components/assets/healix-wordmark.svg" alt="Healix" /></div>
+        <div class="scope-divider"></div>
+        <div class="scope-slot wide">
+          <div class="combobox has-value" data-combobox>
+            <button type="button" class="combobox-trigger" aria-haspopup="listbox">
+              <svg style="width:16px;height:16px;color:var(--colors-light-muted-foreground);flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18ZM6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2m12 0h2a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-2M10 6h4M10 10h4M10 14h4M10 18h4"/></svg>
+              <span class="combobox-value">Province A</span>
+              <svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg>
+            </button>
+            <div class="combobox-popover" hidden>
+              <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Switch customer…" /></div>
+              <div class="combobox-list" role="listbox">
+                <div class="combobox-group-label">Customers · 3</div>
+                <div class="combobox-item is-selected" data-value="bkk">Province A</div>
+                <div class="combobox-item" data-value="cm">District 2</div>
+                <div class="combobox-item" data-value="pk">District 3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <nav class="appbar-nav">
+          <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/></svg>Customers</a>
+          <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>Inventory</a>
+          <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
+          <a class="nav-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Roles</a>
+        </nav>
+        <span class="appbar-spacer"></span>
+        <div class="appbar-right">
+          <span class="bell-wrap"><button class="btn btn-ghost btn-icon" aria-label="Notifications"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button></span>
+          <button class="avatar sq" aria-label="Account">MG</button>
+        </div>
+      </div>
+      <div class="canvas">managing <strong style="color:var(--colors-light-foreground);margin:0 4px;">Province A</strong></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

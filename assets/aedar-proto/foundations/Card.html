@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .two { display: grid; grid-template-columns: 348px 1fr; gap: 24px; align-items: start; }
+  .list-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--colors-light-border); }
+  .list-row:last-child { border-bottom: none; }
+  .list-row .nm { font-size: 14px; font-weight: 500; flex-grow: 1; }
+  .list-row .sub { font-size: 12px; color: var(--colors-light-muted-foreground); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Card</h1>
+    <p class="lede">Panels for dashboards and detail views. Radius <strong>16px</strong>, <strong>--card</strong> surface, hairline border, soft shadow. Header (title + description, optional action), body, optional footer. Includes the <strong>KPI summary tiles</strong> used on the dashboard.</p>
+  </header>
+
+  <!-- Summary tiles -->
+  <section>
+    <div class="sec-head"><h2>Dashboard summary tiles</h2><span class="note">KPI stat cards</span></div>
+    <div class="tiles">
+      <div class="stat-card">
+        <div class="stat-top"><span class="stat-label">Total devices</span><span class="stat-ico" style="background:var(--colors-light-secondary);color:var(--colors-light-secondary-foreground)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg></span></div>
+        <div class="stat-value">42</div>
+        <div class="stat-meta">across 3 hospitals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><span class="stat-label">Operational</span><span class="stat-ico" style="background:var(--status-operational-soft);color:var(--status-operational)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+        <div class="stat-value">39</div>
+        <div class="stat-meta"><span class="delta up"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>+2</span> since yesterday</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><span class="stat-label">Warnings</span><span class="stat-ico" style="background:var(--status-warning-soft);color:var(--status-warning)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span></div>
+        <div class="stat-value">2</div>
+        <div class="stat-meta">low battery</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><span class="stat-label">Offline</span><span class="stat-ico" style="background:var(--status-offline-soft);color:rgb(115,115,115)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2 22 22M8.5 16.5a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 4.2-2.5M20 11.3A15 15 0 0 0 12 8"/></svg></span></div>
+        <div class="stat-value">1</div>
+        <div class="stat-meta"><span class="delta down"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M17 7v10H7"/></svg>+1</span> needs a visit</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Basic card + list card -->
+  <section>
+    <div class="sec-head"><h2>Content cards</h2><span class="note">header · body · footer</span></div>
+    <div class="two">
+      <div class="ui-card">
+        <div class="ui-card-header">
+          <div class="ui-card-heading">
+            <span class="ui-card-title">Add a device</span>
+            <span class="ui-card-desc">Register a new AED unit to this hospital.</span>
+          </div>
+        </div>
+        <div class="ui-card-body">
+          <div class="field"><label class="field-label">Serial number</label><input class="input" placeholder="AED-0042" /></div>
+        </div>
+        <div class="ui-card-footer">
+          <button class="btn btn-outline" style="flex:1">Cancel</button>
+          <button class="btn btn-default" style="flex:1">Add</button>
+        </div>
+      </div>
+
+      <div class="ui-card">
+        <div class="ui-card-header">
+          <div class="ui-card-heading">
+            <span class="ui-card-title">Open alerts</span>
+            <span class="ui-card-desc">Devices needing attention right now.</span>
+          </div>
+          <button class="btn btn-link">View all</button>
+        </div>
+        <div class="ui-card-body" style="padding-top:8px;">
+          <div class="list-row"><span class="badge badge-status badge-warning"><span class="badge-dot"></span>Warning</span><span class="nm">AED — City Hall <span class="sub">· District 1</span></span><span class="sub">battery 34%</span></div>
+          <div class="list-row"><span class="badge badge-status badge-warning"><span class="badge-dot"></span>Warning</span><span class="nm">AED — Cafeteria <span class="sub">· District 1</span></span><span class="sub">battery 22%</span></div>
+          <div class="list-row"><span class="badge badge-status badge-offline"><span class="badge-dot"></span>Offline</span><span class="nm">AED — Rehab Center <span class="sub">· District 3</span></span><span class="sub">2 days</span></div>
+        </div>
+      </div>
+    </div>
+  <!-- Selectable metric cards -->
+  <section>
+    <div class="sec-head"><h2>Selectable metric cards</h2><span class="note">Asset Overview · acts as a radio — pick a perspective</span></div>
+    <div class="card" style="padding:24px;">
+      <div class="metric-grid" id="perspectives" role="radiogroup" aria-label="Asset perspective">
+        <button class="metric-card selected" role="radio" aria-checked="true" data-view="groups">
+          <div class="metric-top">
+            <span class="metric-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg></span>
+            <span class="metric-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          </div>
+          <span class="metric-label">Groups</span>
+          <span class="metric-value">5</span>
+        </button>
+        <button class="metric-card" role="radio" aria-checked="false" data-view="devices">
+          <div class="metric-top">
+            <span class="metric-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg></span>
+            <span class="metric-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          </div>
+          <span class="metric-label">AED Devices</span>
+          <span class="metric-value">12</span>
+        </button>
+        <button class="metric-card" role="radio" aria-checked="false" data-view="users">
+          <div class="metric-top">
+            <span class="metric-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <span class="metric-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          </div>
+          <span class="metric-label">Users</span>
+          <span class="metric-value">6</span>
+        </button>
+      </div>
+      <div class="panel-body" id="perspective-caption" style="margin-top:20px;">Showing the <strong>Groups</strong> table below.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const group = document.getElementById('perspectives');
+  const cards = Array.from(group.querySelectorAll('.metric-card'));
+  const caption = document.getElementById('perspective-caption');
+  const labels = { groups: 'Groups', devices: 'AED Devices', users: 'Users' };
+  cards.forEach((card) => card.addEventListener('click', () => {
+    cards.forEach((c) => { const on = c === card; c.classList.toggle('selected', on); c.setAttribute('aria-checked', on); });
+    caption.innerHTML = `Showing the <strong>${labels[card.dataset.view]}</strong> table below.`;
+  }));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shopping discovery — bififolio</title>
+  <meta name="description" content="Bringing live and social-commerce sellers into the TrueMoney app, so buyers discover them without leaving their wallet.">
+  <meta name="theme-color" content="#F6F9FE">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%230B1730'/%3E%3Cpath d='M16 6 L18.2 13.8 L26 16 L18.2 18.2 L16 26 L13.8 18.2 L6 16 L13.8 13.8Z' fill='%23C7D7F7'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+  <header class="nav">
+    <a class="logo" href="../index.html" aria-label="bififolio, home">bififolio<span>✦</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="../index.html#work">All work</a><a href="../playground.html">Playground</a><a href="../index.html#about">About</a><a href="../index.html#experience">Experience</a><a href="../index.html#contact">Contact</a>
+    </nav>
+    <div class="nav-r"><a class="btn dark sm" href="../assets/resume.pdf">Resume</a></div>
+  </header>
+
+  <main>
+    <section class="cs-hero">
+      <span class="cs-badge">Case study</span>
+      <span class="label cs-tag">Commerce · TrueMoney app · UX-8817</span>
+      <h1 class="cs-title">Shopping <em>discovery.</em></h1>
+      <p class="cs-sum">Bringing live and social-commerce sellers into the TrueMoney app, so buyers discover them without ever leaving their wallet.</p>
+      <div class="cs-meta">
+        <div><small>Role</small><b>Product Designer</b></div>
+        <div><small>Timeline</small><b>Dev Jul – Aug 2026 · Launch Sep 2026</b></div>
+        <div><small>Team</small><b>Design · business · engineering</b></div>
+        <div><small>Tools</small><b>Figma · Prototyping</b></div>
+      </div>
+    </section>
+
+    <div class="cs-cover"><div class="cs-cover-in" style="--c1:#FFF6D0; --c2:#FFCB3D">
+      <div class="pv-phone"><i class="pv-notch"></i><small>Shopping discovery</small><span class="pv-av"></span><b>Fashion · Beauty</b><span class="pv-btn">Explore</span></div>
+      <span class="cover-note">Figma screens coming in the next pass</span>
+    </div></div>
+
+    <div class="cs-layout">
+      <nav class="toc" aria-label="On this page">
+        <a href="#overview">Overview</a><a href="#problem">Problem</a><a href="#goals">Goals</a><a href="#process">Process</a><a href="#solution">Solution</a><a href="#prototype">Prototype</a><a href="#impact">Results &amp; impact</a><a href="#learnings">Learnings</a>
+      </nav>
+
+      <article>
+        <section class="cs-sec" id="overview">
+          <p class="label">01</p><h2>Overview</h2>
+          <p>Live and social-commerce sellers were building real businesses on Facebook and Vrich, with zero presence inside TrueMoney — even though many of their buyers already pay through the app. Shopping Discovery is a new page in TMN that surfaces these sellers by category, so buyers can find them without ever leaving their wallet.</p>
+        </section>
+
+        <section class="cs-sec" id="problem">
+          <p class="label">02</p><h2>The <span>problem</span></h2>
+          <p><b>Live sellers had no visibility inside TrueMoney</b>, and TMN buyers already active in live/social shopping had no bridge from the app they pay with to the sellers they'd want to pay. The brief I inherited was three business slides — a CMS wireframe, a frontend flow, and an overview — with no formal Experience Canvas and almost no user-side rationale, only the business case.</p>
+          <div class="ph wide">Business-first brief<small>Strong business case, thin user-need rationale — mine to draft and validate</small></div>
+        </section>
+
+        <section class="cs-sec" id="goals">
+          <p class="label">03</p><h2>Goals &amp; <span>constraints</span></h2>
+          <p><b>Grow seller visibility and turn it into TMN P2P volume:</b> the business case targets 2,000 pilot sellers, projected to bring in ~83,678 new P2P senders through network effect. Constraint: this project skips the usual PL review step entirely — designs go straight to leadership and business — so there's less buffer to catch gaps before a senior review.</p>
+        </section>
+
+        <section class="cs-sec" id="process">
+          <p class="label">04</p><h2>My <span>process</span></h2>
+          <div class="steps">
+            <div class="step"><span class="n">1</span><div><h3>Discover</h3><p>Since no Experience Canvas existed, I drafted one myself. Pulled seller data (Vrich sellers skew Fashion 35% and Beauty &amp; Skincare 25% — the highest-transacting categories) and surfaced a buyer persona business hadn't put in the original deck: ages 40–60, who shop by watching live sessions on Facebook.</p></div></div>
+            <div class="step"><span class="n">2</span><div><h3>Define</h3><p>Confirmed the actual interaction model with business: TMN never plays video — it shows a static thumbnail and taps straight out to the seller's own Facebook or Instagram. TMN's role is discovery and listing only. Eligibility is a firm gate: a seller must both be paid through TrueMoney <b>and</b> be Vrich-partnered.</p></div></div>
+            <div class="step"><span class="n">3</span><div><h3>Design</h3><p>Placed the entry point on TMN's "all services" icon grid per business decision, and ordered category shelves by real transaction data — Fashion and Beauty first, not alphabetically. Designed a How-To section explaining how to link a bank account and transfer to it.</p></div></div>
+            <div class="step"><span class="n">4</span><div><h3>Test &amp; refine</h3><p>Caught a real tension against the 40–60 buyer persona: the original wireframe used small, dense badge tags, which doesn't work for an older audience that needs larger type and bigger tap targets. I'd also initially recommended sending the How-To topics to separate screens — re-checking that against the same persona showed it added unnecessary navigation, so I reworked it into one inline accordion with a numbered step timeline, right on the discovery page.</p></div></div>
+          </div>
+          <div class="ph">Process artefacts<small>Experience Canvas, seller/buyer data — coming with the Figma pass</small></div>
+        </section>
+
+        <section class="cs-sec" id="solution">
+          <p class="label">05</p><h2>The <span>solution</span></h2>
+          <p><b>A discovery feed, not a marketplace.</b> Category shelves lead with Fashion and Beauty &amp; Skincare, matching where the transaction volume actually is. Tapping a seller's static thumbnail exits straight to their own Facebook or Instagram — TMN stays the discovery layer, not a media player. An inline How-To accordion at the bottom walks people through linking and transferring to a bank account, in place instead of navigating away.</p>
+          <div class="ph-row">
+            <div class="ph">Category shelves<small>Fashion &amp; Beauty first — coming soon</small></div>
+            <div class="ph">Seller card → tap-out<small>Key screen — coming soon</small></div>
+            <div class="ph">Inline How-To accordion<small>Key screen — coming soon</small></div>
+          </div>
+        </section>
+
+        <section class="cs-sec" id="prototype">
+          <p class="label">06</p><h2>Try the <span>prototype</span></h2>
+          <p><b>Bringing the Figma prototype in next</b> — the tap-out flow and the How-To accordion are the two moments worth clicking through by hand.</p>
+          <div class="ph wide">Add prototype or walkthrough<small>Figma embed — coming soon</small></div>
+        </section>
+
+        <section class="cs-sec" id="impact">
+          <p class="label">07</p><h2>Results &amp; <span>impact</span></h2>
+          <p><b>Targeting launch for September 2026.</b> The business case going in: 2,000 pilot sellers, projected at ~83,678 new P2P senders via network effect. Real adoption numbers go here once it's had time in market.</p>
+          <div class="metrics">
+            <div class="metric"><b>2,000</b><span>pilot sellers targeted</span></div>
+            <div class="metric"><b>~83,678</b><span>projected new P2P senders (network effect)</span></div>
+            <div class="metric"><b>—</b><span>Add real post-launch result</span></div>
+          </div>
+        </section>
+
+        <section class="cs-sec" id="learnings">
+          <p class="label">08</p><h2>What I <span>learned</span></h2>
+          <p>Given a business-goal-only brief, drafting the missing Experience Canvas myself was the only way to get user-side rationale into the room at all. And I learned to keep checking my own recommendations against the actual persona — the navigate-to-separate-screens idea sounded reasonable until I re-tested it against a 40–60-year-old buyer who just wants the answer inline, right where they already are.</p>
+        </section>
+      </article>
+    </div>
+
+    <div class="cs-next"><a class="next-card" href="aedar.html"><div><small>Next project</small><b>AEDAR, Medigrowth</b></div><span>→</span></a></div>
+    <footer class="foot" style="max-width:1240px;margin:0 auto;padding:30px var(--pad) 50px"><span>© <span data-year>2026</span> bififolio</span><a class="ulink" href="../index.html#work">← Back to all work</a><span>Designed &amp; built by me</span></footer>
+  </main>
+  <script src="../js/common.js"></script>
+</body>
+</html>

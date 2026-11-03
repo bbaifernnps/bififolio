@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>International Transfer — bififolio</title>
+  <meta name="description" content="Owning both directions of cross-border money movement at TrueMoney, under Bank of Thailand oversight.">
+  <meta name="theme-color" content="#F6F9FE">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%230B1730'/%3E%3Cpath d='M16 6 L18.2 13.8 L26 16 L18.2 18.2 L16 26 L13.8 18.2 L6 16 L13.8 13.8Z' fill='%23C7D7F7'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+  <header class="nav">
+    <a class="logo" href="../index.html" aria-label="bififolio, home">bififolio<span>✦</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="../index.html#work">All work</a><a href="../playground.html">Playground</a><a href="../index.html#about">About</a><a href="../index.html#experience">Experience</a><a href="../index.html#contact">Contact</a>
+    </nav>
+    <div class="nav-r"><a class="btn dark sm" href="../assets/resume.pdf">Resume</a></div>
+  </header>
+
+  <main>
+    <section class="cs-hero">
+      <span class="cs-badge">Flagship project</span>
+      <span class="label cs-tag">Fintech · Mobile app · End-to-end UX</span>
+      <h1 class="cs-title">International <em>Transfer.</em></h1>
+      <p class="cs-sum">Owning both directions of cross-border money movement at TrueMoney — sending abroad and receiving from abroad — under Bank of Thailand oversight.</p>
+      <div class="cs-meta">
+        <div><small>Role</small><b>Sole Product Designer</b></div>
+        <div><small>Timeline</small><b>2025 — Now, nearing launch</b></div>
+        <div><small>Team</small><b>1 designer · engineers · PM · compliance</b></div>
+        <div><small>Tools</small><b>Figma · Design system</b></div>
+      </div>
+    </section>
+
+    <div class="cs-cover"><div class="cs-cover-in" style="--c1:#A9D8FF; --c2:#6FB1FF">
+      <div class="pv-phone"><i class="pv-notch"></i><small>Send abroad</small><span class="pv-av"></span><b>฿ 1,250 → £ 26.88</b><span class="pv-btn">Confirm</span></div>
+      <span class="cover-note">Figma screens coming in the next pass</span>
+    </div></div>
+
+    <div class="cs-layout">
+      <nav class="toc" aria-label="On this page">
+        <a href="#overview">Overview</a><a href="#problem">Problem</a><a href="#goals">Goals</a><a href="#process">Process</a><a href="#solution">Solution</a><a href="#prototype">Prototype</a><a href="#impact">Results &amp; impact</a><a href="#learnings">Learnings</a>
+      </nav>
+
+      <article>
+        <section class="cs-sec" id="overview">
+          <p class="label">01</p><h2>Overview</h2>
+          <p>TrueMoney is a wallet millions of Thai people already trust for everyday money — but moving money across a border is a different game, with different rules. I own the full international transfer domain, <b>outbound (sending abroad)</b> and <b>inbound (receiving from abroad)</b>, and I'm designing it end to end while the regulatory ground keeps shifting underneath it. It's the single biggest-scope project I own, and the one I'd point to as my name card.</p>
+        </section>
+
+        <section class="cs-sec" id="problem">
+          <p class="label">02</p><h2>The <span>problem</span></h2>
+          <p><b>Sending or receiving money internationally is inherently higher-stakes than a domestic transfer</b> — more steps, more compliance checks, more ways for a user to feel unsure whether their money is safe. TrueMoney's existing patterns were built for fast, simple, domestic flows (P2P, PromptPay, merchant QR). International transfer needed to inherit that same feeling of an effortless wallet, while actually carrying far more regulatory weight than anything else in the domain.</p>
+          <div class="ph wide">Regulatory + UX tension<small>Bank of Thailand compliance requirements vs. a simple, trustworthy wallet flow</small></div>
+        </section>
+
+        <section class="cs-sec" id="goals">
+          <p class="label">03</p><h2>Goals &amp; <span>constraints</span></h2>
+          <p><b>Design a cross-border transfer experience that meets Bank of Thailand regulation without feeling like a compliance form.</b> The real constraint here isn't technical — it's that <b>BOT requirements don't stay still</b>. Over a long build, rules around verification, limits and reporting shifted more than once, so the design had to stay flexible enough to absorb regulatory change without a full rebuild every time.</p>
+        </section>
+
+        <section class="cs-sec" id="process">
+          <p class="label">04</p><h2>My <span>process</span></h2>
+          <div class="steps">
+            <div class="step"><span class="n">1</span><div><h3>Discover</h3><p>Audited how cross-border transfer is handled elsewhere — global remittance-first apps (Revolut, Wise-style flows, Monzo, N26) alongside Thai banks (KBANK, SCB, Krungthai) and Alipay, to see how each balances trust, speed and compliance friction.</p></div></div>
+            <div class="step"><span class="n">2</span><div><h3>Define</h3><p>Mapped outbound and inbound as two related but distinct journeys, and pinpointed exactly where BOT compliance touches the flow — verification, purpose-of-transfer, transaction limits — so those moments could be designed for, not bolted on.</p></div></div>
+            <div class="step"><span class="n">3</span><div><h3>Design</h3><p>Built the flows inside TrueMoney's existing design system so international transfer feels like the same app, not a separate product — working with the DS team on any new components the compliance steps required.</p></div></div>
+            <div class="step"><span class="n">4</span><div><h3>Test &amp; refine</h3><p>Kept iterating as requirements moved: re-checking flows each time a rule changed, and designing the compliance touchpoints modularly so a future rule change costs a component update, not a redesign.</p></div></div>
+          </div>
+          <div class="ph">Process artefacts<small>Competitor audit, journey maps — coming with the Figma pass</small></div>
+        </section>
+
+        <section class="cs-sec" id="solution">
+          <p class="label">05</p><h2>The <span>solution</span></h2>
+          <p><b>One wallet, two directions.</b> The send-abroad flow reuses the calm, one-decision-per-screen pattern from TrueMoney's domestic transfers (see the prototype below), while the receive-from-abroad flow gives people clear, plain-language visibility into a payment that started outside the app entirely — including the compliance checkpoints, framed as reassurance rather than red tape.</p>
+          <div class="ph-row">
+            <div class="ph">Send abroad<small>Key screen — coming soon</small></div>
+            <div class="ph">Receive from abroad<small>Key screen — coming soon</small></div>
+            <div class="ph">Compliance checkpoint<small>Key screen — coming soon</small></div>
+          </div>
+        </section>
+
+        <section class="cs-sec" id="prototype">
+          <p class="label">06</p><h2>Try the <span>prototype</span></h2>
+          <p>The currency-conversion flow below borrows directly from this project — pick an amount, see it convert, get a confident confirmation.</p>
+          <div class="proto-cta"><a class="btn dark magnetic" href="../index.html#demo">Open the interactive prototype →</a></div>
+        </section>
+
+        <section class="cs-sec" id="impact">
+          <p class="label">07</p><h2>Results &amp; <span>impact</span></h2>
+          <p><b>Still nearing launch, so the honest answer is: ask me again soon.</b> What I can say now — this is the most regulation-heavy, longest-running project I've owned solo, spanning both directions of a domain end to end. Real usage numbers go here once it's live.</p>
+          <div class="metrics">
+            <div class="metric"><b>2×</b><span>directions owned solo — outbound &amp; inbound</span></div>
+            <div class="metric"><b>—</b><span>Add launch date once confirmed</span></div>
+            <div class="metric"><b>—</b><span>Add real adoption/volume result post-launch</span></div>
+          </div>
+        </section>
+
+        <section class="cs-sec" id="learnings">
+          <p class="label">08</p><h2>What I <span>learned</span></h2>
+          <p>Designing against a moving regulatory target taught me to build flexibility into the system itself, not just the screens — modular compliance components that can absorb a rule change without a redesign. It also sharpened how I frame trade-offs to non-design stakeholders: BOT requirements aren't negotiable, so the job is finding where craft still has room to make a mandatory step feel human.</p>
+        </section>
+      </article>
+    </div>
+
+    <div class="cs-next"><a class="next-card" href="sml.html"><div><small>Next project</small><b>SML</b></div><span>→</span></a></div>
+    <footer class="foot" style="max-width:1240px;margin:0 auto;padding:30px var(--pad) 50px"><span>© <span data-year>2026</span> bififolio</span><a class="ulink" href="../index.html#work">← Back to all work</a><span>Designed &amp; built by me</span></footer>
+  </main>
+  <script src="../js/common.js"></script>
+</body>
+</html>

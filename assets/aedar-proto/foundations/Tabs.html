@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Tabs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .card { background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 12px; padding: 28px; }
+  .panel-body { margin-top: 20px; padding: 20px; background: var(--colors-light-muted); border-radius: 8px; font-size: 14px; color: var(--colors-light-foreground); line-height: 1.6; }
+  .panel-body .k { color: var(--colors-light-muted-foreground); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Tabs</h1>
+    <p class="lede">Segmented control for switching views — device detail (<strong>Status &amp; telemetry, Location, Events, Contacts</strong>) and grouped counts. Track is <strong>secondary</strong> with 4px padding; the active tab is a white pill. Counts use the <strong>inverted</strong> badge when active, <strong>secondary</strong> when not. All live.</p>
+  </header>
+
+  <!-- Device detail tabs -->
+  <section>
+    <div class="sec-head"><h2>Device detail</h2><span class="note">segmented · click to switch</span></div>
+    <div class="card">
+      <div class="tabs" data-tabs>
+        <button class="tab active" data-panel="p-status">Status &amp; telemetry</button>
+        <button class="tab" data-panel="p-loc">Location history</button>
+        <button class="tab" data-panel="p-evt">Event history</button>
+        <button class="tab" data-panel="p-con">Contacts</button>
+      </div>
+      <div class="tab-panel panel-body" id="p-status"><span class="k">Battery</span> 96% · <span class="k">Pads expire</span> 2027-03 · <span class="k">Signal</span> strong · <span class="k">Last self-test</span> passed 2h ago</div>
+      <div class="tab-panel panel-body" id="p-loc" hidden><span class="k">Current</span> Province A · Hospital A Level 4 · <span class="k">Moved</span> 2 times in 90 days</div>
+      <div class="tab-panel panel-body" id="p-evt" hidden><span class="k">Latest</span> Cabinet opened — 2026-06-14 09:12 · <span class="k">Prior</span> Maintenance check — 2026-05-30</div>
+      <div class="tab-panel panel-body" id="p-con" hidden><span class="k">Primary</span> อรุณี (Response lead) · <span class="k">Backup</span> Facilities desk ext. 4102</div>
+    </div>
+  </section>
+
+  <!-- Counts (RBAC example) -->
+  <section>
+    <div class="sec-head"><h2>With counts</h2><span class="note">active = inverted badge · inactive = secondary</span></div>
+    <div class="card">
+      <div class="tabs tabs-lg" data-tabs data-count>
+        <button class="tab active" data-panel="c-sub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>Subgroups <span class="badge-count is-inverted">5</span></button>
+        <button class="tab" data-panel="c-aed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg>AED Devices <span class="badge-count is-secondary">12</span></button>
+        <button class="tab" data-panel="c-usr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Users <span class="badge-count is-secondary">6</span></button>
+      </div>
+      <div class="tab-panel panel-body" id="c-sub">5 subgroups under Province A.</div>
+      <div class="tab-panel panel-body" id="c-aed" hidden>12 AED devices assigned to this group.</div>
+      <div class="tab-panel panel-body" id="c-usr" hidden>6 users with access to this group.</div>
+    </div>
+  </section>
+
+  <!-- Underline variant -->
+  <section>
+    <div class="sec-head"><h2>Underline variant</h2><span class="note">for page-level section switching</span></div>
+    <div class="card">
+      <div class="tabs-underline" data-tabs>
+        <button class="tab active" data-panel="u-open">Open</button>
+        <button class="tab" data-panel="u-all">All history</button>
+        <button class="tab" data-panel="u-res">Resolved</button>
+      </div>
+      <div class="tab-panel panel-body" id="u-open">3 open maintenance alerts.</div>
+      <div class="tab-panel panel-body" id="u-all" hidden>128 alerts across all time.</div>
+      <div class="tab-panel panel-body" id="u-res" hidden>125 resolved alerts.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+document.querySelectorAll('[data-tabs]').forEach((group) => {
+  const tabs = Array.from(group.querySelectorAll('.tab'));
+  const isCount = group.hasAttribute('data-count');
+  tabs.forEach((tab) => tab.addEventListener('click', () => {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.classList.toggle('active', on);
+      const panelId = t.dataset.panel;
+      const panel = panelId && document.getElementById(panelId);
+      if (panel) panel.hidden = !on;
+      if (isCount) {
+        const b = t.querySelector('.badge-count');
+        if (b) { b.classList.toggle('is-inverted', on); b.classList.toggle('is-secondary', !on); }
+      }
+    });
+  }));
+});
+</script>
+</body>
+</html>

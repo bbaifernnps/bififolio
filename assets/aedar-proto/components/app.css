@@ -1,0 +1,82 @@
+/* ==================================================================
+   AEDAR app screen layout — shared by Customer App & Control Plane
+   Page scaffold, section headers, panels, map canvas, empty states.
+   Loads after aedar-ui.css.
+================================================================== */
+body.app { margin: 0; background: var(--colors-light-muted); color: var(--colors-light-foreground); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+.app-page { max-width: 1440px; margin: 0 auto; padding: 28px 40px 72px; }
+
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.page-title { font-family: var(--font-sans); font-weight: 600; font-size: 24px; line-height: 1.2; letter-spacing: -0.015em; color: var(--colors-light-foreground); margin: 0; }
+.page-sub { font-size: 14px; color: var(--colors-light-muted-foreground); margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+.page-sub .sep { width: 3px; height: 3px; border-radius: 9999px; background: var(--colors-light-muted-foreground); opacity: .5; }
+.page-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+.section { margin-top: 28px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.section-title { font-family: var(--font-sans); font-weight: 600; font-size: 18px; line-height: 1.2; letter-spacing: -0.01em; margin: 0; }
+
+/* Panel wrapping a toolbar + content (device list / map) */
+.panel { border: 1px solid var(--colors-light-border); border-radius: 16px; background: var(--colors-light-card); overflow: hidden; }
+.panel-toolbar { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--colors-light-border); }
+.panel-toolbar .search { position: relative; flex-grow: 1; max-width: 340px; }
+.panel-toolbar .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--colors-light-muted-foreground); pointer-events: none; }
+.panel-toolbar .search .input { padding-left: 34px; }
+.panel-toolbar .spacer { flex-grow: 1; }
+.panel .dt-wrap { border: none; border-radius: 0; }
+.panel .dt-footer { border-top: 1px solid var(--colors-light-border); }
+
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 1000px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+
+/* clickable table rows */
+.dt tbody tr.clickable { cursor: pointer; }
+
+/* Selectable KPI tile (acts as status filter) */
+.stat-card.selectable { cursor: pointer; transition: background-color .12s ease, border-color .12s ease, box-shadow .12s ease; }
+.stat-card.selectable:hover { border-color: var(--colors-light-ring); }
+.stat-card.selectable.selected { background: var(--colors-light-secondary); border-color: var(--colors-light-primary); }
+.stat-card.selectable.selected .stat-label,
+.stat-card.selectable.selected .stat-value { color: var(--colors-light-secondary-foreground); }
+.stat-card.selectable.selected .stat-meta { color: var(--colors-light-secondary-foreground); opacity: .7; }
+.stat-card.selectable.selected .stat-ico { background: var(--colors-light-primary) !important; color: #fff !important; }
+
+/* Map canvas (placeholder for Google Maps — D16) */
+.map-canvas { position: relative; height: 540px; overflow: hidden;
+  background:
+    linear-gradient(rgba(224,242,254,.35), rgba(224,242,254,.35)),
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(14,110,183,.06) 47px 48px),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(14,110,183,.06) 47px 48px),
+    var(--colors-light-muted);
+}
+.map-note { position: absolute; left: 16px; bottom: 16px; z-index: 5; background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: var(--colors-light-muted-foreground); box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+
+/* AED map marker — mapkits_aed heart + pulse, colored by status */
+.map-pin { position: absolute; transform: translate(-50%, -100%); width: 30px; height: 27px; cursor: pointer; filter: drop-shadow(0 2px 3px rgba(0,0,0,.28)); transition: transform .12s ease, opacity .12s ease; }
+.map-pin svg { display: block; width: 100%; height: 100%; }
+.map-pin.operational { color: var(--status-operational); }
+.map-pin.warning { color: var(--status-warning); }
+.map-pin.in-use { color: var(--status-in-use); }
+.map-pin.offline { color: var(--status-offline); }
+.map-pin.validate { color: var(--status-validate); }
+.map-cluster { position: absolute; transform: translate(-50%,-50%); width: 44px; height: 44px; border-radius: 9999px; background: var(--colors-light-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,.25); cursor: pointer; }
+.aed-marker { display: inline-block; line-height: 0; }
+.aed-marker svg { display: block; width: 100%; height: 100%; }
+.map-pin.dim { opacity: .22; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 64px 24px; text-align: center; }
+.empty-state[hidden] { display: none; }
+.empty-state .empty-ico { width: 44px; height: 44px; border-radius: 12px; background: var(--colors-light-muted); display: flex; align-items: center; justify-content: center; color: var(--colors-light-muted-foreground); }
+.empty-state .empty-title { font-weight: 600; font-size: 16px; }
+.empty-state .empty-desc { font-size: 14px; color: var(--colors-light-muted-foreground); max-width: 340px; }
+
+/* Table / list footer pager — shared by control plane pages; matches the
+   customer app's Dashboard + DeviceDetail pagers. */
+.cp-list-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; border-top: 1px solid var(--colors-light-border); font-size: 13px; color: var(--colors-light-muted-foreground); }
+.pager { display: flex; align-items: center; gap: 8px; }
+.pager .pg-nums { display: flex; align-items: center; gap: 4px; }
+.pager .pg-num { min-width: 30px; height: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-sans); font-size: 13px; font-variant-numeric: tabular-nums; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--colors-light-foreground); cursor: pointer; }
+.pager .pg-num:hover { background: var(--colors-light-muted); }
+.pager .pg-num.active { background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); font-weight: 600; }
+.pager .pg-gap { min-width: 18px; text-align: center; color: var(--colors-light-muted-foreground); }
+.pager .btn[disabled] { opacity: .4; pointer-events: none; }

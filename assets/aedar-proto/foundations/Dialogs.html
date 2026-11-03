@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Modal / dialog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .card { background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 12px; padding: 28px; }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; }
+
+  /* Anatomy backdrop */
+  .anatomy { background: repeating-linear-gradient(-45deg, rgb(240,242,245) 0 10px, rgb(244,246,248) 10px 20px); border: 1px solid var(--colors-light-border); border-radius: 12px; padding: 40px; display: flex; justify-content: center; }
+  .anatomy .dialog { position: relative; transform: none; }
+  .tag-note { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--colors-light-muted-foreground); margin-top: 12px; }
+  .tag-note code { font-family: var(--font-mono); background: var(--colors-light-muted); padding: 1px 6px; border-radius: 4px; color: var(--colors-light-foreground); }
+  .seat-note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--status-warning-soft); font-size: 13px; line-height: 1.5; color: rgb(120,90,0); }
+  .seat-note svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: var(--status-warning); }
+  .seat-meter { font-size: 13px; color: var(--colors-light-muted-foreground); }
+  .seat-meter b { color: var(--colors-light-foreground); font-weight: 600; }
+  .alert-icon { width: 44px; height: 44px; border-radius: 9999px; background: var(--status-in-use-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+  .alert-icon svg { width: 22px; height: 22px; color: var(--colors-light-destructive); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Modal / dialog</h1>
+    <p class="lede">One dialog pattern for every focused task — <strong>add contact</strong>, <strong>assign device</strong>, <strong>add user</strong>. Card is <strong>424px</strong>, radius 12, with a header (title + description), a scrollable body, and a right-aligned two-button footer. Destructive confirmations reuse the same shell. Open them below.</p>
+  </header>
+
+  <!-- Anatomy -->
+  <section>
+    <div class="sec-head"><h2>Anatomy</h2><span class="note">header · body · footer · close</span></div>
+    <div class="anatomy">
+      <div class="dialog" style="max-height:none;">
+        <div class="dialog-header">
+          <span class="dialog-title">Dialog title</span>
+          <span class="dialog-desc">A short description explaining what this dialog does and any consequence of confirming.</span>
+        </div>
+        <div class="dialog-body">
+          <div class="field">
+            <label class="field-label">Field label</label>
+            <input class="input" placeholder="Body holds the form or content" />
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn btn-outline">Cancel</button>
+          <button class="btn btn-default">Confirm</button>
+        </div>
+        <button class="dialog-close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+    <div class="tag-note">Scrim <code>rgba(0,0,0,.4)</code> · shadow <code>0 10px 15px -3px</code> · close top-right <code>16/16</code></div>
+  </section>
+
+  <!-- Triggers -->
+  <section>
+    <div class="sec-head"><h2>In context</h2><span class="note">real AEDAR modals — click to open</span></div>
+    <div class="card">
+      <div class="row">
+        <button class="btn btn-default" data-dialog-open="dlg-contact"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add contact</button>
+        <button class="btn btn-secondary" data-dialog-open="dlg-assign">Assign device</button>
+        <button class="btn btn-secondary" data-dialog-open="dlg-user">Add user</button>
+        <button class="btn btn-secondary" data-dialog-open="dlg-user-cap">Add user — at seat cap</button>
+        <button class="btn btn-destructive" data-dialog-open="dlg-remove"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Remove device</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ Dialogs ============ -->
+
+<!-- Add contact -->
+<div class="dialog-overlay" id="dlg-contact" hidden>
+  <div class="dialog">
+    <div class="dialog-header">
+      <span class="dialog-title">Add contact</span>
+      <span class="dialog-desc">Notify this person about rescue events and maintenance at their assigned sites.</span>
+    </div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Full name <span class="req">*</span></label><input class="input" placeholder="ชื่อ-นามสกุล" /></div>
+      <div class="field">
+        <label class="field-label">Role</label>
+        <div class="combobox" data-select>
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select role…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+            <div class="combobox-item" data-value="lead">Emergency response lead</div>
+            <div class="combobox-item" data-value="facilities">Facilities manager</div>
+            <div class="combobox-item" data-value="nurse">Ward nurse</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Phone <span class="req">*</span></label><input class="input" placeholder="+66" /></div>
+      <div class="control-row"><input type="checkbox" class="checkbox" id="dc-notify" checked /><label for="dc-notify">Notify on rescue events at assigned sites</label></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" data-dialog-close>Add contact</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Assign device -->
+<div class="dialog-overlay" id="dlg-assign" hidden>
+  <div class="dialog">
+    <div class="dialog-header">
+      <span class="dialog-title">Assign device</span>
+      <span class="dialog-desc">Attach an AED serial number to an org node so the right staff can see it.</span>
+    </div>
+    <div class="dialog-body">
+      <div class="field">
+        <label class="field-label">Device</label>
+        <div class="combobox" data-combobox>
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Search serial…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></button>
+          <div class="combobox-popover" hidden>
+            <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search unassigned serials…" /></div>
+            <div class="combobox-list" role="listbox">
+              <div class="combobox-group-label">Unassigned inventory</div>
+              <div class="combobox-item" data-value="0150">AED-0150 · AED S1</div>
+              <div class="combobox-item" data-value="0151">AED-0151 · AED S1</div>
+              <div class="combobox-item" data-value="0152">AED-0152 · AED C2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Assign to org node</label>
+        <div class="combobox" data-combobox>
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select node…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></button>
+          <div class="combobox-popover" hidden>
+            <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search nodes…" /></div>
+            <div class="combobox-list" role="listbox">
+              <div class="combobox-group-label">Province A</div>
+              <div class="combobox-item" data-value="er">Hospital A</div>
+              <div class="combobox-item" data-value="icu">Hospital B</div>
+              <div class="combobox-item" data-value="lobby">City Hall</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" data-dialog-close>Assign device</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Add user (within seat cap) -->
+<div class="dialog-overlay" id="dlg-user" hidden>
+  <div class="dialog">
+    <div class="dialog-header">
+      <span class="dialog-title">Add user</span>
+      <span class="dialog-desc">Invite a staff member. They'll receive an email to set their password.</span>
+    </div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Email <span class="req">*</span></label><input class="input" placeholder="name@hospital.co.th" /></div>
+      <div class="field">
+        <label class="field-label">Role</label>
+        <div class="combobox" data-select>
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Org Admin</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+            <div class="combobox-item is-selected" data-value="admin">Org Admin</div>
+            <div class="combobox-item" data-value="viewer">Viewer (scoped)</div>
+            <div class="combobox-item" data-value="tech">Technician</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="seat-meter"><b>8 of 10</b> seats used</div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" data-dialog-close>Send invite</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Add user (at seat cap — disabled) -->
+<div class="dialog-overlay" id="dlg-user-cap" hidden>
+  <div class="dialog">
+    <div class="dialog-header">
+      <span class="dialog-title">Add user</span>
+      <span class="dialog-desc">Invite a staff member. They'll receive an email to set their password.</span>
+    </div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Email <span class="req">*</span></label><input class="input" placeholder="name@hospital.co.th" disabled /></div>
+      <div class="seat-meter"><b>10 of 10</b> seats used</div>
+      <div class="seat-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>You've reached your seat limit. Contact MediGrowth to add more seats before inviting new users.</span>
+      </div>
+    </div>
+    <div class="dialog-footer spread">
+      <button class="btn btn-link" data-dialog-close>Contact MediGrowth</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" data-dialog-close>Cancel</button>
+        <button class="btn btn-default" disabled>Send invite</button>
+      </div>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Remove device (destructive) -->
+<div class="dialog-overlay" id="dlg-remove" hidden>
+  <div class="dialog">
+    <div class="dialog-header">
+      <div class="alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div>
+      <span class="dialog-title">Remove this device?</span>
+      <span class="dialog-desc">AED-0044 · District 1 · City Hall will stop reporting and be removed from monitoring. This can't be undone.</span>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-destructive" data-dialog-close>Remove device</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+</body>
+</html>

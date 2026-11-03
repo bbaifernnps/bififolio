@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Tooltip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .card { background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 12px; padding: 44px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 40px; justify-content: center; }
+  .row.left { justify-content: flex-start; gap: 16px; }
+  .hint { text-align: center; font-size: 13px; color: var(--colors-light-muted-foreground); margin-top: 20px; }
+  .metric-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+  .metric-inline .dt-mono { font-family: var(--font-mono); }
+  .info-ico { width: 15px; height: 15px; color: var(--colors-light-muted-foreground); cursor: help; }
+  .truncate { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Tooltip</h1>
+    <p class="lede">Short, on-demand labels — icon-button names, truncated text, telemetry definitions. Healix-blue bubble, radius <strong>8px</strong>, 14px white text, with a rotated-square caret. Shows on <strong>hover and keyboard focus</strong>. Four caret positions. Hover the examples below.</p>
+  </header>
+
+  <!-- Positions -->
+  <section>
+    <div class="sec-head"><h2>Positions</h2><span class="note">top · bottom · left · right</span></div>
+    <div class="card">
+      <div class="row">
+        <span class="tip tip-top"><button class="btn btn-outline">Top</button><span class="tip-bubble">Tooltip on top<i class="tip-caret"></i></span></span>
+        <span class="tip tip-bottom"><button class="btn btn-outline">Bottom</button><span class="tip-bubble">Tooltip on bottom<i class="tip-caret"></i></span></span>
+        <span class="tip tip-left"><button class="btn btn-outline">Left</button><span class="tip-bubble">Tooltip on left<i class="tip-caret"></i></span></span>
+        <span class="tip tip-right"><button class="btn btn-outline">Right</button><span class="tip-bubble">Tooltip on right<i class="tip-caret"></i></span></span>
+      </div>
+      <p class="hint">Also opens on Tab focus.</p>
+    </div>
+  </section>
+
+  <!-- Icon buttons -->
+  <section>
+    <div class="sec-head"><h2>Icon buttons</h2><span class="note">names for icon-only actions</span></div>
+    <div class="card">
+      <div class="row left">
+        <span class="tip tip-bottom"><button class="btn btn-ghost btn-icon" aria-label="Refresh"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M3 21v-5h5"/></svg></button><span class="tip-bubble">Refresh telemetry<i class="tip-caret"></i></span></span>
+        <span class="tip tip-bottom"><button class="btn btn-ghost btn-icon" aria-label="Export"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button><span class="tip-bubble">Export CSV<i class="tip-caret"></i></span></span>
+        <span class="tip tip-bottom"><button class="btn btn-ghost btn-icon" aria-label="Filter"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg></button><span class="tip-bubble">Filter devices<i class="tip-caret"></i></span></span>
+        <span class="tip tip-bottom"><button class="btn btn-ghost btn-icon" aria-label="Settings"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><span class="tip-bubble">Settings<i class="tip-caret"></i></span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- In context -->
+  <section>
+    <div class="sec-head"><h2>In context</h2><span class="note">definitions &amp; truncation</span></div>
+    <div class="card">
+      <div class="row left" style="gap:36px;">
+        <span class="metric-inline">Battery health
+          <span class="tip tip-top"><svg class="info-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg><span class="tip-bubble">Estimated from last self-test<i class="tip-caret"></i></span></span>
+        </span>
+        <span class="metric-inline"><span class="k" style="color:var(--colors-light-muted-foreground)">Serial</span>
+          <span class="tip tip-top"><span class="dt-mono" style="color:var(--colors-light-foreground)">AED-0042</span><span class="tip-bubble">Copy serial number<i class="tip-caret"></i></span></span>
+        </span>
+        <span class="tip tip-top"><span class="truncate">AED — East Wing Level 3 Corridor</span><span class="tip-bubble">AED — East Wing Level 3 Corridor<i class="tip-caret"></i></span></span>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

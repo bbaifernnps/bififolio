@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/app-nav.js" defer></script>
+<style>
+  /* ---- KPI tiles: 5-up, In-use emphasized -------------------------- */
+  .tiles.k5 { grid-template-columns: repeat(5, 1fr); }
+  @media (max-width: 1100px) { .tiles.k5 { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 720px)  { .tiles.k5 { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card.tile-inuse { border-color: var(--status-in-use); background: var(--status-in-use-soft); }
+  /* Fixed column widths so sorting/filtering never reflows the table */
+  .dt-fixed { table-layout: fixed; }
+  .dt-fixed td, .dt-fixed th { overflow: hidden; text-overflow: ellipsis; }
+  .dt-fixed td .dt-cell-stack { min-width: 0; }
+  .dt-fixed td .dt-primary, .dt-fixed td .dt-mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stat-card.tile-inuse .stat-value { color: var(--status-in-use); }
+  .stat-card.tile-inuse.selectable:hover { border-color: var(--status-in-use); }
+  .stat-card.tile-inuse.selected { background: var(--status-in-use); border-color: var(--status-in-use); }
+  .stat-card.tile-inuse.selected .stat-label,
+  .stat-card.tile-inuse.selected .stat-value { color: #fff; }
+  .stat-card.tile-inuse.selected .stat-meta { color: #fff; opacity: .85; }
+  .stat-card.tile-inuse.selected .stat-ico { background: #fff !important; color: var(--status-in-use) !important; }
+  /* pulse the in-use tile icon when count>0 & priority mode */
+  .pulse-dot { position: relative; }
+  .pulse-dot::after { content:""; position:absolute; inset:0; border-radius:inherit; box-shadow:0 0 0 0 var(--status-in-use); animation: aedpulse 2s ease-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .pulse-dot::after { animation: none; } }
+  @keyframes aedpulse { 0% { box-shadow:0 0 0 0 rgba(200,71,71,.45);} 70%{ box-shadow:0 0 0 10px rgba(200,71,71,0);} 100%{ box-shadow:0 0 0 0 rgba(200,71,71,0);} }
+
+  /* ---- In-use banner (emphasis = banner) --------------------------- */
+  .inuse-banner { display: flex; align-items: center; gap: 16px; padding: 16px 20px; margin-bottom: 20px;
+    border: 1px solid var(--status-in-use); border-radius: 14px;
+    background: linear-gradient(0deg, var(--status-in-use-soft), var(--status-in-use-soft)), var(--colors-light-card); }
+  .inuse-banner .ib-ico { width: 42px; height: 42px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: var(--status-in-use); color: #fff; }
+  .inuse-banner .ib-ico svg { width: 22px; height: 22px; }
+  .inuse-banner .ib-body { flex-grow: 1; min-width: 0; }
+  .inuse-banner .ib-title { font-size: 15px; font-weight: 600; color: var(--status-in-use); display: flex; align-items: center; gap: 9px; }
+  .inuse-banner .ib-live { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--status-in-use); }
+  .inuse-banner .ib-live .live-dot { width: 8px; height: 8px; border-radius: 9999px; background: var(--status-in-use); animation: aedblink 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .inuse-banner .ib-live .live-dot { animation: none; } }
+  @keyframes aedblink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  @media (prefers-reduced-motion: no-preference) {
+    .badge-in-use .badge-dot { animation: aedblink 1.2s ease-in-out infinite; }
+  }
+  .inuse-banner .ib-sub { font-size: 13px; color: var(--colors-light-foreground); margin-top: 3px; }
+  .inuse-banner .ib-sub .mono { font-family: var(--font-mono); color: var(--colors-light-muted-foreground); }
+  .inuse-banner[hidden] { display: none; }
+
+  /* ---- Readiness columns ------------------------------------------- */
+  .net { display: inline-flex; align-items: center; gap: 8px; }
+  .net-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+  .net-bars i { width: 3px; border-radius: 1px; background: var(--colors-light-border); }
+  .net-bars i:nth-child(1){ height: 5px; } .net-bars i:nth-child(2){ height: 9px; } .net-bars i:nth-child(3){ height: 13px; }
+  .net-bars.s1 i:nth-child(1), .net-bars.s2 i:nth-child(-n+2), .net-bars.s3 i { background: var(--status-operational); }
+  .net-bars.s1.weak i:nth-child(1) { background: var(--status-warning); }
+  .net-type { font-size: 13px; color: var(--colors-light-foreground); }
+  .net-off { font-size: 13px; color: var(--colors-light-muted-foreground); display: inline-flex; align-items: center; gap: 6px; }
+  .net-off svg { width: 15px; height: 15px; }
+  .ready { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+  .ready svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .ready.ok  { color: var(--status-operational); }
+  .ready.due { color: var(--status-warning); }
+  .ready.bad { color: var(--status-in-use); }
+  .ready.off { color: var(--colors-light-muted-foreground); }
+  .batt { display: inline-flex; align-items: flex-start; gap: 8px; }
+  .batt-ico { line-height: 0; flex-shrink: 0; }
+  .batt-ico svg { width: 24px; height: 16px; display: block; }
+  /* stacked: reported charge + the standby time it guarantees */
+  .batt-stack { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+  .batt-guar { font-size: 11px; color: var(--colors-light-muted-foreground); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .dash-list-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 16px; border-top: 1px solid var(--colors-light-border); font-size: 13px; color: var(--colors-light-muted-foreground); }
+  .pager { display: flex; align-items: center; gap: 8px; }
+  .pager .pg-info { font-size: 13px; color: var(--colors-light-muted-foreground); min-width: 84px; text-align: center; }
+  .pager .pg-nums { display: flex; align-items: center; gap: 4px; }
+  .pager .pg-num { min-width: 30px; height: 30px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-variant-numeric: tabular-nums; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--colors-light-foreground); cursor: pointer; }
+  .pager .pg-num:hover { background: var(--colors-light-muted); }
+  .pager .pg-num.active { background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); font-weight: 600; }
+  .pager .pg-gap { min-width: 18px; text-align: center; color: var(--colors-light-muted-foreground); }
+  .pager .btn[disabled] { opacity: .4; pointer-events: none; }
+
+  /* in-use row highlight (both modes) */
+  .dt tbody tr.row-inuse { background: var(--status-in-use-soft); box-shadow: inset 3px 0 0 var(--status-in-use); }
+  .dt tbody tr.row-inuse:hover { background: rgba(200,71,71,.15); }
+  .dt tbody tr.row-inuse td:first-child { position: relative; }
+
+  /* ---- Map view (folded-in filter + searchable list) --------------- */
+  #view-map .map-split { display: flex; height: 560px; }
+  #view-map .map-main { position: relative; flex-grow: 1; }
+  #leaflet-map { position: absolute; inset: 0; z-index: 0; }
+  .leaflet-container { font-family: var(--font-sans); background: var(--colors-light-muted); }
+  /* Gently soften terrain vividness — full opacity, just less saturated */
+  .leaflet-tile-pane { filter: saturate(0.8); }
+  /* Popup card */
+  .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 12px 24px -6px rgba(0,0,0,.2), 0 4px 6px -4px rgba(0,0,0,.1); padding: 0; }
+  .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+  .pp { padding: 15px 16px 16px; display: flex; flex-direction: column; gap: 12px; min-width: 264px; }
+  .pp-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--colors-light-foreground); }
+  .pp-badge { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pp-sn { font-family: var(--font-mono); font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px 16px; padding-top: 2px; border-top: 1px solid var(--colors-light-border); }
+  .pp-stat { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .pp-stat.full { grid-column: 1 / -1; }
+  .pp-stat .k { font-size: 11px; color: var(--colors-light-muted-foreground); }
+  .pp-stat .v { font-size: 13px; font-weight: 500; color: var(--colors-light-foreground); }
+  .pp-note { font-size: 11px; color: var(--colors-light-muted-foreground); font-variant-numeric: tabular-nums; }
+  .pp-btn { width: 100%; }
+  /* Leaflet's .leaflet-container a rule out-specifies .btn-default — restore button colors */
+  .leaflet-popup-content a.btn { text-decoration: none; }
+  .leaflet-popup-content a.btn-default, .leaflet-popup-content a.btn-default:hover { color: #fff; }
+  .mpin { width: 30px; height: 27px; cursor: pointer; filter: drop-shadow(0 2px 3px rgba(0,0,0,.3)); transition: transform .12s ease; }
+  .mpin svg { display: block; width: 100%; height: 100%; }
+  .mpin.operational { color: var(--status-operational); }
+  .mpin.warning { color: var(--status-warning); }
+  .mpin.in-use { color: var(--status-in-use); }
+  .mpin.offline { color: var(--status-offline); }
+  .mpin.validate { color: var(--status-validate); }
+  .mpin.sel { transform: scale(1.3); filter: drop-shadow(0 4px 8px rgba(0,0,0,.34)); }
+  /* Cluster bubble — an AED marker (colored by most urgent device) + count badge */
+  .aed-cluster-pin { position: relative; width: 34px; height: 31px; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
+  .aed-cluster-pin svg { display: block; width: 100%; height: 100%; }
+  .aed-cluster-pin.operational { color: var(--status-operational); }
+  .aed-cluster-pin.warning { color: var(--status-warning); }
+  .aed-cluster-pin.in-use { color: var(--status-in-use); }
+  .aed-cluster-pin.offline { color: var(--status-offline); }
+  .aed-cluster-pin.validate { color: var(--status-validate); }
+  .aed-cluster-badge { position: absolute; top: -7px; right: -9px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 9999px; background: var(--colors-light-primary); color: #fff; font: 600 11px/19px var(--font-sans); text-align: center; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  #view-map .map-side { width: 320px; flex-shrink: 0; border-left: 1px solid var(--colors-light-border); display: flex; flex-direction: column; }
+  #view-map .map-side-head { padding: 12px 14px; border-bottom: 1px solid var(--colors-light-border); }
+  #view-map .map-side-head .search { position: relative; }
+  #view-map .map-side-head .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--colors-light-muted-foreground); pointer-events: none; }
+  #view-map .map-side-head .search .input { padding-left: 34px; }
+  #view-map .map-side-scroll { overflow-y: auto; flex-grow: 1; }
+  .map-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--colors-light-border); cursor: pointer; }
+  .map-item:hover, .map-item.active { background: var(--colors-light-muted); }
+  .map-item .mi-body { flex-grow: 1; min-width: 0; }
+  .map-item .mi-name { font-size: 14px; font-weight: 500; }
+  .map-item .mi-sub { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .map-legend { position: absolute; top: 14px; left: 14px; z-index: 650; display: flex; gap: 6px; flex-wrap: wrap; background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 9999px; padding: 6px 8px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .legend-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 9999px; cursor: pointer; color: var(--colors-light-muted-foreground); white-space: nowrap; }
+  .legend-chip.active { background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); }
+  .legend-chip .status-dot { width: 8px; height: 8px; }
+  .legend-chip .badge-count { min-width: 18px; height: 18px; font-size: 11px; padding: 0 5px; }
+  .pin-pop { position: absolute; z-index: 10; width: 236px; background: var(--colors-light-popover); border: 1px solid var(--colors-light-border); border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,.12), 0 4px 6px -4px rgba(0,0,0,.1); padding: 14px; transform: translate(-50%, calc(-100% - 20px)); }
+  .pin-pop .pp-name { font-weight: 600; font-size: 14px; }
+  .pin-pop .pp-sn { font-family: var(--font-mono); font-size: 12px; color: var(--colors-light-muted-foreground); margin-top: 2px; }
+  .pin-pop .pp-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .pin-pop[hidden] { display: none; }
+  .map-pin.sel { z-index: 8; transform: translate(-50%, -100%) scale(1.28); filter: drop-shadow(0 4px 8px rgba(0,0,0,.32)); }
+  /* Map view: drop the redundant top search (map has its own on the right) and right-align the filters over the side panel */
+  .panel.map-mode .panel-toolbar > .search { display: none; }
+  .panel-toolbar .spacer { display: none; }
+  .panel-toolbar #status-select { margin-left: auto; }
+
+  /* ---- Tweaks panel (vanilla) -------------------------------------- */
+  #twk { position: fixed; right: 16px; bottom: 16px; z-index: 90; width: 260px;
+    background: var(--colors-light-popover); border: 1px solid var(--colors-light-border); border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18); font-family: var(--font-sans); overflow: hidden; }
+  #twk[hidden] { display: none; }
+  .twk-hd { display: flex; align-items: center; justify-content: space-between; padding: 12px 10px 12px 16px; border-bottom: 1px solid var(--colors-light-border); }
+  .twk-hd b { font-size: 13px; font-weight: 600; }
+  .twk-x { appearance: none; border: 0; background: transparent; color: var(--colors-light-muted-foreground); width: 24px; height: 24px; border-radius: 6px; cursor: pointer; }
+  .twk-x:hover { background: var(--colors-light-muted); color: var(--colors-light-foreground); }
+  .twk-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
+  .twk-row .twk-lbl { font-size: 12px; font-weight: 500; color: var(--colors-light-muted-foreground); margin-bottom: 7px; display: block; }
+  .twk-hint { font-size: 11px; color: var(--colors-light-muted-foreground); margin-top: 7px; line-height: 1.4; }
+  .seg { display: flex; background: var(--colors-light-secondary); border-radius: 8px; padding: 3px; gap: 2px; }
+  .seg button { flex: 1; appearance: none; border: 0; background: transparent; font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: var(--colors-light-muted-foreground); padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+  .seg button.on { background: var(--colors-light-background); color: var(--colors-light-foreground); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+</style>
+</head>
+<body class="app">
+<div data-app-nav data-active="dashboard" data-scope="Province A · ทั้งหมด"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title" data-i18n="page.dashboard.title">Device overview</h1>
+      <div class="page-sub"><span id="scope-sub">Province A</span><span class="sep"></span><span data-i18n="page.dashboard.updated">updated 2 min ago</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline" id="refresh"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5"/></svg>Refresh</button>
+    </div>
+  </div>
+
+  <!-- In-use banner (emphasis = banner) -->
+  <div class="inuse-banner" id="inuse-banner" hidden></div>
+
+  <!-- KPI tiles -->
+  <div class="tiles">
+    <div class="stat-card selectable selected" data-filter="all">
+      <div class="stat-top"><span class="stat-label">Total devices</span><span class="stat-ico" style="background:var(--colors-light-secondary);color:var(--colors-light-secondary-foreground)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg></span></div>
+      <div class="stat-value" id="k-total">12</div>
+      <div class="stat-meta" id="k-total-meta">across 3 districts</div>
+    </div>
+    <div class="stat-card selectable" data-filter="operational">
+      <div class="stat-top"><span class="stat-label">Operational</span><span class="stat-ico" style="background:var(--status-operational-soft);color:var(--status-operational)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+      <div class="stat-value" id="k-ok">7</div>
+      <div class="stat-meta">ready &amp; reporting</div>
+    </div>
+    <div class="stat-card selectable" data-filter="warning">
+      <div class="stat-top"><span class="stat-label">Need attention</span><span class="stat-ico" style="background:var(--status-warning-soft);color:var(--status-warning)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span></div>
+      <div class="stat-value" id="k-warn">2</div>
+      <div class="stat-meta">battery / pads</div>
+    </div>
+    <div class="stat-card selectable" data-filter="offline">
+      <div class="stat-top"><span class="stat-label">Offline</span><span class="stat-ico" style="background:var(--status-offline-soft);color:rgb(115,115,115)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg></span></div>
+      <div class="stat-value" id="k-off">1</div>
+      <div class="stat-meta">needs a site visit</div>
+    </div>
+  </div>
+
+  <!-- Devices panel -->
+  <div class="section">
+    <div class="section-head">
+      <h2 class="section-title">Devices</h2>
+      <div class="tabs" id="view-toggle">
+        <button class="tab active" data-view="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>List</button>
+        <button class="tab" data-view="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>Map</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-toolbar">
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="q" placeholder="Search devices, serial, node…" /></div>
+        <div class="combobox has-value" data-select id="status-select" style="width:170px;">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">All status</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox" id="statusfilter">
+            <div class="combobox-item is-selected" data-value="all">All status</div>
+            <div class="combobox-item" data-value="operational">Operational</div>
+            <div class="combobox-item" data-value="warning">Need attention</div>
+            <div class="combobox-item" data-value="offline">Offline</div>
+          </div></div>
+        </div>
+        <div class="combobox has-value" data-select-lazy id="site-select" style="width:190px;">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">All groups</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden>
+            <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search groups / places…" /></div>
+            <div class="combobox-list" role="listbox" id="sitefilter"></div>
+          </div></div>
+        </div>
+        <div class="spacer"></div>
+      </div>
+
+      <!-- List view -->
+      <div id="view-list">
+        <div class="dt-wrap">
+          <table class="dt dt-fixed">
+            <colgroup><col style="width:auto"/><col style="width:120px"/><col style="width:22%"/><col style="width:132px"/><col style="width:150px"/><col style="width:112px"/><col style="width:120px"/><col style="width:52px"/></colgroup>
+            <thead><tr>
+              <th class="sortable" data-sort="name"><span class="th-inner">Device <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+              <th class="sortable" data-sort="model"><span class="th-inner">Model <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+              <th class="sortable" data-sort="node"><span class="th-inner">Location <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+              <th class="sortable" data-sort="status"><span class="th-inner">Status <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+              <th class="sortable" data-sort="battery"><span class="th-inner">Battery <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+              <th data-col="net">Network</th>
+              <th class="sortable" data-sort="seen"><span class="th-inner">Last report <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+              <th class="col-actions"></th>
+            </tr></thead>
+            <tbody id="dt-body"></tbody>
+          </table>
+        </div>
+        <div class="dash-list-foot">
+          <span id="list-count"></span>
+          <div class="pager" id="pager" hidden>
+            <button class="btn btn-ghost btn-sm" id="pg-prev"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Prev</button>
+            <span id="pg-nums" class="pg-nums"></span>
+            <button class="btn btn-ghost btn-sm" id="pg-next">Next <svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map view: filter legend + pins + searchable device list -->
+      <div id="view-map" hidden>
+        <div class="map-split">
+          <div class="map-main">
+            <div class="map-legend" id="legend">
+              <span class="legend-chip active" data-f="all">All <span class="badge-count is-inverted chip-count"></span></span>
+              <span class="legend-chip" data-f="in-use"><span class="status-dot in-use"></span>In use <span class="badge-count is-secondary chip-count"></span></span>
+              <span class="legend-chip" data-f="operational"><span class="status-dot operational"></span>Operational <span class="badge-count is-secondary chip-count"></span></span>
+              <span class="legend-chip" data-f="warning"><span class="status-dot warning"></span>Warning <span class="badge-count is-secondary chip-count"></span></span>
+              <span class="legend-chip" data-f="offline"><span class="status-dot offline"></span>Offline <span class="badge-count is-secondary chip-count"></span></span>
+            </div>
+            <div id="leaflet-map"></div>
+          </div>
+          <div class="map-side">
+            <div class="map-side-head">
+              <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="map-q" placeholder="Search devices…" /></div>
+            </div>
+            <div class="map-side-scroll" id="map-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Tweaks panel (vanilla, host-protocol wired) -->
+<div id="twk" hidden>
+  <div class="twk-hd"><b>Tweaks</b><button class="twk-x" id="twk-close" aria-label="Close">✕</button></div>
+  <div class="twk-body">
+    <div class="twk-row">
+      <span class="twk-lbl">In-use emphasis</span>
+      <div class="seg" id="twk-emphasis">
+        <button data-v="banner">Alert banner</button>
+        <button data-v="priority">Priority rows</button>
+      </div>
+      <div class="twk-hint" id="twk-emphasis-hint"></div>
+    </div>
+    <div class="twk-row">
+      <span class="twk-lbl">Network column</span>
+      <div class="seg" id="twk-ready">
+        <button data-v="on">Show</button>
+        <button data-v="off">Hide</button>
+      </div>
+      <div class="twk-hint">Signal strength + connection type, drawn from AED telemetry.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const ALL = window.AEDAR_DEVICES, STATUS = window.AEDAR_STATUS, body = document.getElementById('dt-body');
+  // Optional group scope passed from the Org chart (?site=&node=&label=)
+  const params = new URLSearchParams(location.search);
+  const scSite = params.get('site'), scNode = params.get('node'), scLabel = params.get('label');
+  const rows = ALL;
+  // Initial scope: URL params (arriving from Org chart) win, else the shared session scope.
+  let scope = 'all';
+  if (scNode && scSite) scope = 'node:' + scSite + '|' + scNode;
+  else if (scSite) scope = 'site:' + scSite;
+  else scope = sessionStorage.getItem('aedar_scope') || 'all';
+  if (scLabel) document.title = 'AEDAR — ' + scLabel;
+  const NOW = new Date('2026-07-11T09:30:00');
+  let sortKey = null, sortDir = 1, query = '', statusF = 'all';
+
+  // ---- Tweaks state (persisted) ----
+  const T = { emphasis: 'priority', ready: 'on' };
+  try { Object.assign(T, JSON.parse(localStorage.getItem('aedar.dash.tweaks.v2') || '{}')); } catch (e) {}
+  const saveT = () => { try { localStorage.setItem('aedar.dash.tweaks.v2', JSON.stringify(T)); } catch (e) {} };
+
+  // ---- Readiness helper: most-severe check drawn from telemetry ----
+  const days = (d) => Math.round((new Date(d) - NOW) / 86400000);
+  function readiness(d) {
+    if (d.status === 'offline') return { cls: 'off', label: 'No signal', ico: 'off' };
+    if (d.battery && d.battery <= 35) return { cls: 'bad', label: 'Low battery', ico: 'batt' };
+    const pe = days(d.electrodeExp), se = days(d.simExp);
+    if (pe <= 45) return { cls: 'due', label: 'Pads due ' + pe + 'd', ico: 'pads' };
+    if (se <= 45) return { cls: 'due', label: 'SIM due ' + se + 'd', ico: 'sim' };
+    if (d.status === 'validate') return { cls: 'due', label: 'To validate', ico: 'val' };
+    return { cls: 'ok', label: 'Self-test OK', ico: 'ok' };
+  }
+  const RICON = {
+    ok:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    batt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/><line x1="6" y1="12" x2="6" y2="12"/></svg>',
+    pads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    sim: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01"/></svg>',
+    val: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>',
+    off: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01M8.5 16.4a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 20 0M2 2l20 20"/></svg>',
+  };
+  function netCell(d) {
+    if (d.status === 'offline' || d.netsignal == null) {
+      return '<span class="net-off">' + RICON.off + 'Offline</span>';
+    }
+    const s = d.netsignal >= -70 ? 3 : d.netsignal >= -85 ? 2 : 1;
+    const weak = s === 1 ? ' weak' : '';
+    return '<span class="net"><span class="net-bars s' + s + weak + '"><i></i><i></i><i></i></span><span class="net-type">' + (d.nettype || '—') + '</span></span>';
+  }
+
+  // ---- Battery level icon (Lucide battery-full / -medium / -low) ----
+  const BFRAME = '<rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/>';
+  const bsvg = (inner) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>';
+  const BATT = {
+    empty:  bsvg(BFRAME),
+    low:    bsvg(BFRAME + '<line x1="6" x2="6" y1="11" y2="13"/>'),
+    medium: bsvg(BFRAME + '<line x1="6" x2="6" y1="11" y2="13"/><line x1="10" x2="10" y1="11" y2="13"/>'),
+    full:   bsvg(BFRAME + '<line x1="6" x2="6" y1="11" y2="13"/><line x1="10" x2="10" y1="11" y2="13"/><line x1="14" x2="14" y1="11" y2="13"/>'),
+  };
+  function batteryCell(d) {
+    if (d.battery === 0 || d.status === 'offline')
+      return '<span class="batt"><span class="batt-ico" style="color:var(--status-offline)">' + BATT.empty + '</span><span class="dt-sub">\u2014</span></span>';
+    const p = d.battery, col = window.aedarBatteryColor(p);
+    const g = p > 60 ? BATT.full : p > 35 ? BATT.medium : BATT.low;
+    // Minimum guaranteed standby time, prorated from charge (100% = 3 years)
+    const gu = window.AEDAR_batteryGuarantee(p);
+    return '<span class="batt"><span class="batt-ico" style="color:' + col + '">' + g + '</span>' +
+      '<span class="batt-stack"><span class="battery-pct">' + p + '%</span>' +
+      '<span class="batt-guar" title="Minimum guaranteed use time \u2014 ' + gu.long + ' of 3 years">\u2248 ' + gu.short + ' left</span></span></span>';
+  }
+  // ---- Last report timestamp: <1h relative, else date + time ----
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function lastReport(d) {
+    if (d.seenv <= 60) return d.seen;
+    const ts = new Date(NOW.getTime() - d.seenv * 60000);
+    const p2 = (n) => String(n).padStart(2, '0');
+    return ts.getDate() + ' ' + MON[ts.getMonth()] + ', ' + p2(ts.getHours()) + ':' + p2(ts.getMinutes());
+  }
+
+  // ---- Scope (province / district / node) shared by list AND map ----
+  // scope value: 'all' | 'site:<site>' | 'node:<site>|<node>'
+  function scopeParts(v) {
+    if (v === 'all' || !v) return {};
+    if (v.indexOf('province:') === 0) return { province: v.slice(9) };
+    if (v.indexOf('site:') === 0) return { site: v.slice(5) };
+    if (v.indexOf('node:') === 0) { const i = v.indexOf('|'); return { site: v.slice(5, i), node: v.slice(i + 1) }; }
+    return {};
+  }
+  // Each group shows ONLY its own direct members — not descendants.
+  //  'all'            → every device
+  //  province:<name>  → devices homed directly at the province (no district)
+  //  site:<site>      → devices homed directly at the district (no sub-group)
+  //  node:<node>      → devices at that exact sub-group
+  const siteMatch = (d) => {
+    const p = scopeParts(scope);
+    if (p.province) return !d.site;
+    if (!p.site) return true;
+    if (p.node) return d.site === p.site && d.node === p.node;
+    return d.site === p.site && !d.node;
+  };
+  // 'warning' groups warning + validate (both = needs attention)
+  const statusMatch = (d, f) => f === 'all' || d.status === f || (f === 'warning' && d.status === 'validate');
+  const statusLabels = { all: 'All status', 'in-use': 'In use', operational: 'Operational', warning: 'Need attention', offline: 'Offline' };
+
+  // ---- KPI counts + legend counts (recomputed for the active site) ----
+  function refreshCounts() {
+    const sc = rows.filter(siteMatch);
+    document.getElementById('k-total').textContent = sc.length;
+    document.getElementById('k-ok').textContent = sc.filter(d => d.status === 'operational').length;
+    document.getElementById('k-warn').textContent = sc.filter(d => d.status === 'warning' || d.status === 'validate').length;
+    document.getElementById('k-off').textContent = sc.filter(d => d.status === 'offline').length;
+    document.querySelectorAll('#legend .legend-chip').forEach(chip => {
+      const b = chip.querySelector('.chip-count'); if (b) b.textContent = sc.filter(d => statusMatch(d, chip.dataset.f)).length;
+    });
+  }
+
+  // ---- In-use banner ----
+  function renderBanner() {
+    const inUseList = rows.filter(d => d.status === 'in-use' && siteMatch(d));
+    const b = document.getElementById('inuse-banner');
+    const show = T.emphasis === 'banner' && inUseList.length > 0;
+    b.hidden = !show;
+    if (!show) return;
+    const d = inUseList[0];
+    const extra = inUseList.length > 1 ? ' · +' + (inUseList.length - 1) + ' more' : '';
+    b.innerHTML =
+      '<span class="ib-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg></span>' +
+      '<div class="ib-body">' +
+        '<div class="ib-title"><span class="ib-live"><span class="live-dot"></span>In use now</span>' + d.name + extra + '</div>' +
+        '<div class="ib-sub">' + window.AEDAR_homeLabel(d) + ' · <span class="mono">' + d.sn + '</span> — cabinet opened, rescue in progress</div>' +
+      '</div>' +
+      '<a class="btn btn-default" href="DeviceDetail.html?sn=' + d.sn + '">View device</a>';
+  }
+
+  // ---- List rendering (paginated: 12 AEDs per page) ----
+  const PAGE_SIZE = 12;
+  let page = 0;
+  function filtered() {
+    const p = scopeParts(scope);
+    const motherFirst = !!p.site && !p.node; // parent's own AEDs before sub-group ones
+    const rank = { 'in-use': 0, warning: 1, validate: 2, offline: 3, operational: 4 };
+    let r = rows.filter(d => statusMatch(d, statusF) && siteMatch(d) && (!query || (d.name + d.sn + (d.node || '')).toLowerCase().includes(query)));
+    r = [...r].sort((a, b) => {
+      if (sortKey) {
+        let av = a[sortKey], bv = b[sortKey];
+        if (sortKey === 'battery') { av = a.battery; bv = b.battery; }
+        if (sortKey === 'seen') { av = a.seenv; bv = b.seenv; }
+        return (typeof av === 'string' ? av.localeCompare(bv) : av - bv) * sortDir;
+      }
+      // Default monitoring order:
+      //   1) in-use always on top   2) mother-group's own AEDs   3) sub-group AEDs
+      //   then most-urgent-first within each band.
+      const ia = a.status === 'in-use' ? 0 : 1, ib = b.status === 'in-use' ? 0 : 1;
+      if (ia !== ib) return ia - ib;
+      if (motherFirst) { const da = a.node ? 1 : 0, db = b.node ? 1 : 0; if (da !== db) return da - db; }
+      return (rank[a.status] ?? 9) - (rank[b.status] ?? 9);
+    });
+    return r;
+  }
+  function render() {
+    const data = filtered();
+    const pages = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
+    if (page >= pages) page = pages - 1;
+    if (page < 0) page = 0;
+    const start = page * PAGE_SIZE;
+    const capped = data.slice(start, start + PAGE_SIZE);
+    const showReady = T.ready === 'on';
+    body.innerHTML = capped.map(d => {
+      const st = STATUS[d.status];
+      const inuse = d.status === 'in-use';
+      return `<tr class="clickable ${inuse ? 'row-inuse' : ''}" data-sn="${d.sn}">
+        <td><div class="dt-cell-stack"><span class="dt-primary">${d.name}</span><span class="dt-mono">${d.sn}</span></div></td>
+        <td class="dt-sub">${d.model}</td>
+        <td>${window.AEDAR_homeLabel(d)}</td>
+        <td><span class="badge badge-status ${st.cls}"><span class="badge-dot"></span>${st.label}</span></td>
+        <td>${batteryCell(d)}</td>
+        <td data-col="net">${netCell(d)}</td>
+        <td class="dt-sub">${lastReport(d)}</td>
+        <td class="col-actions"><span class="dt-actions"><button class="btn btn-ghost btn-icon" aria-label="Actions" data-menu-btn><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></span></td>
+      </tr>`;
+    }).join('');
+    const total = data.length;
+    const pager = document.getElementById('pager');
+    if (total > PAGE_SIZE) {
+      pager.hidden = false;
+      document.getElementById('list-count').textContent = 'Showing ' + (start + 1) + '\u2013' + (start + capped.length) + ' of ' + total + ' \u2014 most urgent first';
+      renderPageNums(pages);
+      document.getElementById('pg-prev').disabled = page === 0;
+      document.getElementById('pg-next').disabled = page >= pages - 1;
+    } else {
+      pager.hidden = true;
+      document.getElementById('list-count').textContent = total + ' device' + (total === 1 ? '' : 's');
+    }
+    document.querySelectorAll('[data-col="net"], [data-col="ready"]').forEach(el => { el.style.display = showReady ? '' : 'none'; });
+  }
+
+  // ---- Emphasis mode application ----
+  function applyEmphasis() {
+    const priority = T.emphasis === 'priority';
+    document.getElementById('twk-emphasis-hint').textContent = priority
+      ? 'In-use AEDs rise to the top of the list with a red highlight; overview of all others is preserved below.'
+      : 'A live banner surfaces any in-use AED above the fleet; rows keep their natural order.';
+    renderBanner();
+    render();
+  }
+
+  document.querySelectorAll('.dt th.sortable').forEach(th => th.addEventListener('click', () => {
+    const k = th.dataset.sort; if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+    document.querySelectorAll('.dt th').forEach(h => h.classList.toggle('sorted', h === th));
+    page = 0; render();
+  }));
+  document.getElementById('q').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); page = 0; render(); });
+  document.getElementById('pg-prev').addEventListener('click', () => { page--; render(); });
+  document.getElementById('pg-next').addEventListener('click', () => { page++; render(); });
+
+  // numbered page buttons with ellipsis for long ranges
+  function renderPageNums(pages) {
+    const nums = [];
+    if (pages <= 7) { for (let i = 0; i < pages; i++) nums.push(i); }
+    else {
+      nums.push(0);
+      let lo = Math.max(1, page - 1), hi = Math.min(pages - 2, page + 1);
+      if (page <= 2) { lo = 1; hi = 3; }
+      if (page >= pages - 3) { lo = pages - 4; hi = pages - 2; }
+      if (lo > 1) nums.push('...');
+      for (let i = lo; i <= hi; i++) nums.push(i);
+      if (hi < pages - 2) nums.push('...');
+      nums.push(pages - 1);
+    }
+    document.getElementById('pg-nums').innerHTML = nums.map(n =>
+      n === '...' ? '<span class="pg-gap">\u2026</span>'
+        : '<button class="pg-num ' + (n === page ? 'active' : '') + '" data-page="' + n + '">' + (n + 1) + '</button>'
+    ).join('');
+    document.querySelectorAll('#pg-nums .pg-num').forEach(b => b.addEventListener('click', () => { page = +b.dataset.page; render(); }));
+  }
+
+  // ---- Status filter shared by KPI tiles, dropdown, and map legend ----
+  const tiles = document.querySelectorAll('.stat-card.selectable');
+  function syncStatusControls() {
+    tiles.forEach(t => t.classList.toggle('selected', t.dataset.filter === statusF));
+    const sv = document.querySelector('#status-select .combobox-value'); if (sv) sv.textContent = statusLabels[statusF] || 'All statuses';
+    document.querySelectorAll('#statusfilter .combobox-item').forEach(i => i.classList.toggle('is-selected', i.dataset.value === statusF));
+    document.querySelectorAll('#legend .legend-chip').forEach(x => {
+      const on = x.dataset.f === statusF; x.classList.toggle('active', on);
+      const b = x.querySelector('.chip-count'); if (b) { b.classList.toggle('is-inverted', on); b.classList.toggle('is-secondary', !on); }
+    });
+  }
+  function setStatus(val) {
+    statusF = val; page = 0; activeSn = null;
+    syncStatusControls();
+    render();
+    refreshMarkers(); fitAll(); renderMapList();
+  }
+  // Reflect a scope value on a combobox (selection + trigger label) WITHOUT dispatching.
+  function setCbValue(root, value) {
+    if (root && typeof root.setValue === 'function') root.setValue(value, true);
+  }
+  function applyScope(value) {
+    scope = value; page = 0; activeSn = null;
+    sessionStorage.setItem('aedar_scope', value);
+    setCbValue(document.getElementById('site-select'), value);
+    setCbValue(document.querySelector('.scope-slot .combobox'), value);
+    const ss = document.getElementById('scope-sub'); if (ss) ss.textContent = window.AEDAR_groupLabel(value);
+    const tm = document.getElementById('k-total-meta'); if (tm) tm.textContent = value === 'all' ? 'across 3 districts' : 'in this group';
+    refreshCounts(); syncStatusControls();
+    renderBanner(); render();
+    refreshMarkers(); fitAll(); renderMapList();
+  }
+  tiles.forEach(t => t.addEventListener('click', () => setStatus(t.classList.contains('selected') && t.dataset.filter !== 'all' ? 'all' : t.dataset.filter)));
+  document.getElementById('status-select').addEventListener('change', e => setStatus(e.detail.value));
+  document.getElementById('site-select').addEventListener('change', e => applyScope(e.detail.value));
+  window.addEventListener('aedar:scope', e => applyScope(e.detail.value));
+
+  // ---- Row click → detail; row menu ----
+  const ic = {
+    eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  };
+  body.addEventListener('click', (e) => {
+    const menuBtn = e.target.closest('[data-menu-btn]');
+    const tr = e.target.closest('tr'); if (!tr) return;
+    const sn = tr.dataset.sn;
+    if (menuBtn) {
+      e.stopPropagation();
+      window.AEDARMenu.open(menuBtn, [
+        { label: 'View details', icon: ic.eye, action: 'view' },
+        { label: 'View on map', icon: ic.map, action: 'map' },
+        { label: 'Copy serial', icon: ic.copy, action: 'copy' },
+      ], (a) => {
+        if (a === 'view') location.href = 'DeviceDetail.html?sn=' + sn;
+        else if (a === 'map') { toggle('map'); setTimeout(() => focusDevice(rows.find(r => r.sn === sn)), 140); }
+        else if (a === 'copy' && navigator.clipboard) navigator.clipboard.writeText(sn);
+      });
+      return;
+    }
+    location.href = 'DeviceDetail.html?sn=' + sn;
+  });
+
+  // ---- List/Map toggle ----
+  const vt = document.getElementById('view-toggle');
+  function toggle(view) {
+    vt.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+    document.getElementById('view-list').hidden = view !== 'list';
+    document.getElementById('view-map').hidden = view !== 'map';
+    document.querySelector('.section .panel').classList.toggle('map-mode', view === 'map');
+    if (view === 'map') { initMap(); setTimeout(() => { LMAP.invalidateSize(); fitAll(); }, 80); renderMapList(); }
+    if (history.replaceState) history.replaceState(null, '', view === 'map' ? '#map' : location.pathname);
+  }
+  vt.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => toggle(t.dataset.view)));
+
+  // ---- Map (Leaflet + OpenStreetMap terrain): markers + legend filter + searchable list ----
+  const mapList = document.getElementById('map-list');
+  let mapQuery = '', activeSn = null;
+  let LMAP = null, CLUSTER = null; const MARKERS = {};
+  const mapMatch = (d) => statusMatch(d, statusF) && siteMatch(d) && (!mapQuery || (d.name + d.sn + (d.node || '')).toLowerCase().includes(mapQuery));
+
+  function popupHTML(d) {
+    const st = STATUS[d.status];
+    const net = (d.status === 'offline' || d.netsignal == null) ? 'Offline' : ((d.nettype || '\u2014') + (d.netsignal != null ? ' \u00b7 ' + d.netsignal + ' dBm' : ''));
+    const batt = d.battery ? d.battery + '%' : '\u2014';
+    const battCol = d.battery ? window.aedarBatteryColor(d.battery) : 'inherit';
+    return `
+      <div class="pp">
+        <div class="pp-name">${d.name}</div>
+        <div class="pp-badge"><span class="badge badge-status ${st.cls}"><span class="badge-dot"></span>${st.label}</span><span class="pp-sn">${d.sn}</span></div>
+        <div class="pp-grid">
+          <div class="pp-stat full"><span class="k">Location</span><span class="v">${window.AEDAR_homeLabel(d)}</span></div>
+          <div class="pp-stat"><span class="k">Battery</span><span class="v" style="color:${battCol}">${batt}</span>${d.battery ? '<span class="pp-note">\u2248 ' + window.AEDAR_batteryGuarantee(d.battery).short + ' guaranteed use</span>' : ''}</div>
+          <div class="pp-stat"><span class="k">Network</span><span class="v">${net}</span></div>
+          <div class="pp-stat full"><span class="k">Last report</span><span class="v">${lastReport(d)}</span></div>
+        </div>
+        <a class="btn btn-default btn-sm pp-btn" href="DeviceDetail.html?sn=${d.sn}">View details</a>
+      </div>`;
+  }
+  function makeIcon(d, focused) {
+    return L.divIcon({ className: '', html: '<div class="mpin ' + d.status + (focused ? ' sel' : '') + '">' + window.aedarMarkerSVG() + '</div>', iconSize: [30, 27], iconAnchor: [15, 27], popupAnchor: [0, -26] });
+  }
+  function fitAll() {
+    const pts = rows.filter(mapMatch).map(d => [d.lat, d.lng]);
+    if (pts.length && LMAP) LMAP.fitBounds(pts, { padding: [55, 55], maxZoom: 13 });
+  }
+  function refreshMarkers() {
+    if (!CLUSTER) return;
+    CLUSTER.clearLayers();
+    const add = [];
+    rows.forEach(d => {
+      const m = MARKERS[d.sn]; if (!m) return;
+      m.setIcon(makeIcon(d, d.sn === activeSn));
+      if (mapMatch(d)) add.push(m);
+    });
+    CLUSTER.addLayers(add);
+  }
+  function highlightActive() { rows.forEach(d => { const m = MARKERS[d.sn]; if (m) m.setIcon(makeIcon(d, d.sn === activeSn)); }); }
+  function initMap() {
+    if (LMAP) return;
+    LMAP = L.map('leaflet-map', { zoomControl: false, scrollWheelZoom: true });
+    L.control.zoom({ position: 'topright' }).addTo(LMAP);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(LMAP);
+    LMAP.setView([13.7566, 100.5039], 12);
+    CLUSTER = L.markerClusterGroup({
+      maxClusterRadius: 55,
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      disableClusteringAtZoom: 16,
+      iconCreateFunction: (cluster) => {
+        const order = ['in-use', 'warning', 'offline', 'validate', 'operational'];
+        let sev = 'operational';
+        cluster.getAllChildMarkers().forEach(k => { if (order.indexOf(k._aedStatus) < order.indexOf(sev)) sev = k._aedStatus; });
+        return L.divIcon({
+          html: '<div class="aed-cluster-pin ' + sev + '">' + window.aedarMarkerSVG() + '<span class="aed-cluster-badge">' + cluster.getChildCount() + '</span></div>',
+          className: '', iconSize: [34, 31], iconAnchor: [17, 31]
+        });
+      }
+    });
+    LMAP.addLayer(CLUSTER);
+    rows.forEach(d => {
+      const m = L.marker([d.lat, d.lng], { icon: makeIcon(d, false) });
+      m.bindPopup(popupHTML(d), { minWidth: 272, maxWidth: 320, closeButton: true, keepInView: true, autoPanPaddingTopLeft: [24, 92], autoPanPaddingBottomRight: [24, 24] });
+      m.on('click', () => { activeSn = d.sn; highlightActive(); renderMapList(); });
+      m.on('popupclose', () => { if (activeSn === d.sn) { activeSn = null; highlightActive(); renderMapList(); } });
+      m._aedStatus = d.status;
+      MARKERS[d.sn] = m;
+    });
+    refreshMarkers(); fitAll();
+  }
+  function focusDevice(d) {
+    if (!d) return;
+    initMap();
+    activeSn = d.sn;
+    const m = MARKERS[d.sn];
+    refreshMarkers();
+    if (m && CLUSTER) CLUSTER.zoomToShowLayer(m, () => { m.setIcon(makeIcon(d, true)); m.openPopup(); });
+    else if (m) { LMAP.setView([d.lat, d.lng], Math.max(LMAP.getZoom(), 15)); m.openPopup(); }
+    renderMapList();
+  }
+  function renderMapList() {
+    const data = rows.filter(mapMatch);
+    mapList.innerHTML = data.map(d => {
+      const st = STATUS[d.status];
+      return `<div class="map-item ${d.sn === activeSn ? 'active' : ''}" data-sn="${d.sn}">
+        <span class="status-dot ${d.status}"></span>
+        <div class="mi-body"><div class="mi-name">${d.name}</div><div class="mi-sub">${window.AEDAR_homeLabel(d)} · ${d.seen}</div></div>
+        <span class="badge badge-status ${st.cls}" style="height:auto;"><span class="badge-dot"></span>${st.label}</span>
+      </div>`;
+    }).join('') || '<div class="empty-state"><div class="empty-desc">No devices match.</div></div>';
+    mapList.querySelectorAll('.map-item').forEach(it => it.addEventListener('click', () => focusDevice(rows.find(r => r.sn === it.dataset.sn))));
+  }
+  document.getElementById('legend').querySelectorAll('.legend-chip').forEach(c => c.addEventListener('click', () => setStatus(c.dataset.f)));
+  document.getElementById('map-q').addEventListener('input', e => {
+    mapQuery = e.target.value.trim().toLowerCase(); activeSn = null;
+    refreshMarkers(); renderMapList();
+  });
+
+  document.getElementById('refresh').addEventListener('click', () => window.AEDARToast && AEDARToast.show({ variant: 'info', title: 'Fleet refreshed', description: 'Telemetry synced from AED.' }));
+
+  // ---- Tweaks wiring (host protocol) ----
+  const twk = document.getElementById('twk');
+  function paintSeg(id, val) { document.querySelectorAll('#' + id + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === val)); }
+  paintSeg('twk-emphasis', T.emphasis); paintSeg('twk-ready', T.ready);
+  document.querySelectorAll('#twk-emphasis button').forEach(b => b.addEventListener('click', () => { T.emphasis = b.dataset.v; saveT(); paintSeg('twk-emphasis', T.emphasis); applyEmphasis(); }));
+  document.querySelectorAll('#twk-ready button').forEach(b => b.addEventListener('click', () => { T.ready = b.dataset.v; saveT(); paintSeg('twk-ready', T.ready); render(); }));
+  document.getElementById('twk-close').addEventListener('click', () => { twk.hidden = true; window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); });
+  window.addEventListener('message', (e) => {
+    const t = e && e.data && e.data.type;
+    if (t === '__activate_edit_mode') twk.hidden = false;
+    else if (t === '__deactivate_edit_mode') twk.hidden = true;
+  });
+  window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+  // ---- boot ----
+  // Populate the group filter from the shared hierarchy, then init its combobox.
+  document.getElementById('sitefilter').innerHTML = window.AEDAR_groupOptionsHTML(scope);
+  window.AEDARCombobox.init(document.getElementById('site-select'));
+  applyScope(scope);
+  applyEmphasis();
+  if (location.hash === '#map') toggle('map');
+
+  // Deep-link from Device detail: ?focus=<sn> → open map, search that SN, focus it.
+  const focusSn = params.get('focus');
+  if (focusSn) {
+    const fd = rows.find(r => r.sn === focusSn);
+    if (fd) {
+      applyScope(fd.node ? 'node:' + fd.site + '|' + fd.node : 'site:' + fd.site);
+      toggle('map');
+      const mq = document.getElementById('map-q');
+      mq.value = fd.sn; mapQuery = fd.sn.toLowerCase();
+      refreshMarkers(); renderMapList();
+      setTimeout(() => focusDevice(fd), 200);
+    }
+  }
+});
+</script>
+</body>
+</html>

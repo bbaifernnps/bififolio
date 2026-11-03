@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR Control Plane — Roles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/cp-nav.js" defer></script>
+<style>
+  .roles-layout { display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: start; }
+  .role-list { border: 1px solid var(--colors-light-border); border-radius: 16px; background: var(--colors-light-card); padding: 8px; }
+  .role-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+  .role-item:hover { background: var(--colors-light-muted); }
+  .role-item.sel { background: var(--colors-light-secondary); }
+  .role-item .r-body { flex-grow: 1; min-width: 0; }
+  .role-item .r-name { font-size: 14px; font-weight: 500; }
+  .role-item.sel .r-name { color: var(--colors-light-secondary-foreground); }
+  .role-item .r-meta { font-size: 12px; color: var(--colors-light-muted-foreground); margin-top: 1px; }
+  .role-item .row-act { flex-shrink: 0; opacity: 0; }
+  .role-item:hover .row-act, .role-item.sel .row-act, .role-item .row-act[aria-expanded="true"] { opacity: 1; }
+  .role-sep { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--colors-light-muted-foreground); padding: 12px 12px 6px; }
+  .perm-group { border-bottom: 1px solid var(--colors-light-border); }
+  .perm-group:last-child { border-bottom: none; }
+  .perm-group-head { font-size: 13px; font-weight: 600; padding: 16px 20px 8px; color: var(--colors-light-muted-foreground); }
+  .perm-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 20px; }
+  .perm-row:hover { background: var(--colors-light-muted); }
+  .perm-label { font-size: 14px; }
+  .perm-label .desc { font-size: 12px; color: var(--colors-light-muted-foreground); margin-top: 2px; }
+  .lock-note { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .lock-note svg { width: 13px; height: 13px; }
+  .lock-note[hidden] { display: none; }
+</style>
+</head>
+<body class="app">
+<div data-cp-nav data-cp-mode="mg" data-active="roles"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title" id="page-title">Role templates</h1>
+      <div class="page-sub"><span>All customers</span><span class="sep"></span><span id="page-sub-note">the library copied into every new customer</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline" id="clone-btn"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span id="clone-label">Create new template</span></button>
+      <button class="btn btn-default" id="save-btn"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Save changes</button>
+    </div>
+  </div>
+
+  <div class="alert soft info" id="mode-note" style="margin-bottom:20px;">
+    <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    <div class="alert-body"><span class="alert-title" id="mode-title">—</span><span class="alert-desc" id="mode-desc">—</span></div>
+  </div>
+
+  <div class="roles-layout">
+    <div class="role-list" id="role-list"></div>
+    <div class="ui-card">
+      <div class="ui-card-header">
+        <div class="ui-card-heading"><span class="ui-card-title" id="role-title">Org Admin</span><span class="ui-card-desc" id="role-desc">Full access within the customer tenant.</span></div>
+        <span class="lock-note" id="lock-note" hidden></span>
+      </div>
+      <div class="ui-card-body" style="padding:0;" id="perms"></div>
+    </div>
+  </div>
+</main>
+
+<div class="dialog-overlay" id="dlg-clone" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title" id="dlg-clone-title">Create new role</span><span class="dialog-desc" id="dlg-clone-desc">Start a fresh role, then set its permissions.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Role name <span class="req">*</span></label><input class="input" id="clone-name" placeholder="e.g. Ward Supervisor" /></div>
+      <div class="field"><label class="field-label">Start from</label>
+        <div class="combobox has-value" data-select id="base-select">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Blank (no permissions)</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+            <div class="combobox-item is-selected" data-value="blank">Blank (no permissions)</div>
+            <div class="combobox-item" data-value="viewer">Copy from Viewer</div>
+            <div class="combobox-item" data-value="editor">Copy from Editor</div>
+            <div class="combobox-item" data-value="maintainer">Copy from Maintainer</div>
+            <div class="combobox-item" data-value="admin">Copy from Org Admin</div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="clone-save" data-dialog-close>Create role</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="dlg-delete" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title" id="dlg-del-title">Delete role?</span><span class="dialog-desc" id="dlg-del-desc">—</span></div>
+    <div class="dialog-body"><p id="dlg-del-note" style="margin:0;font-size:14px;line-height:1.5;color:var(--colors-light-muted-foreground);text-wrap:pretty;">—</p></div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-destructive" id="del-go" data-dialog-close>Delete</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="dlg-rename" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Rename role</span><span class="dialog-desc" id="dlg-rename-desc">—</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Role name <span class="req">*</span></label><input class="input" id="rename-input" /></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="rename-save" data-dialog-close>Save</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const PERM_GROUPS = [
+    { g: 'Monitoring', perms: [ ['view_dashboard', 'View dashboard & map', 'See device status in scope'], ['view_device', 'View device detail', 'Telemetry, location, events'], ['view_alerts', 'View alerts', 'Open & history'] ] },
+    { g: 'Device soft data', perms: [ ['edit_device', 'Edit device info', 'Name & install address'], ['manage_contacts', 'Manage contacts', 'Add / edit notification contacts'], ['ack_alerts', 'Acknowledge alerts', 'Clear open maintenance alerts'] ] },
+    { g: 'Administration', perms: [ ['manage_users', 'Manage users', 'Invite up to seat cap'], ['manage_roles', 'Manage roles', 'Edit role assignments'], ['manage_org', 'Edit org chart', 'Add / move groups'] ] },
+  ];
+  function all(v){const o={};PERM_GROUPS.forEach(g=>g.perms.forEach(p=>o[p[0]]=v));return o;}
+  function pick(keys){const o=all(false);keys.forEach(k=>o[k]=true);return o;}
+  const clone = (r) => ({ ...r, perms: { ...r.perms } });
+
+  // PRESETS = the platform library. It is COPIED into a customer at onboarding;
+  // after that each customer's roles live on their own and diverge freely (PRD §3.4).
+  const PRESETS = {
+    admin: { name: 'Org Admin', desc: 'Full access within the customer tenant.', preset: true, perms: all(true) },
+    editor: { name: 'Editor', desc: 'Monitor + edit soft data.', preset: true, perms: pick(['view_dashboard','view_device','view_alerts','edit_device','manage_contacts','ack_alerts']) },
+    maintainer: { name: 'Maintainer', desc: 'Monitor + acknowledge maintenance.', preset: true, perms: pick(['view_dashboard','view_device','view_alerts','ack_alerts']) },
+    viewer: { name: 'Viewer', desc: 'Read-only within scope.', preset: true, perms: pick(['view_dashboard','view_device','view_alerts']) },
+  };
+  const copyPresets = () => Object.fromEntries(Object.entries(PRESETS).map(([id, r]) => [id, { ...clone(r), preset: false, fromPreset: r.name }]));
+
+  // Each tenant's own set: presets as copied at onboarding, plus anything added since.
+  const TENANT_ROLES = { cmi: copyPresets(), cri: copyPresets(), pkt: copyPresets() };
+  TENANT_ROLES.cmi.ward = { name: 'Ward Supervisor', desc: 'Added for this customer.', preset: false, perms: pick(['view_dashboard','view_device','view_alerts','edit_device','manage_contacts','ack_alerts','manage_users']) };
+  TENANT_ROLES.cmi.editor.perms.manage_contacts = false;
+  TENANT_ROLES.cmi.editor.desc = 'Copied from template · edited for this customer.';
+
+  function scopeId() { return window.AEDARCPScope ? window.AEDARCPScope.get() : 'all'; }
+  function isHub() { return scopeId() === 'all'; }
+  function roles() { return isHub() ? PRESETS : TENANT_ROLES[scopeId()]; }
+
+  let sel = 'admin';
+  let renameId = null;
+  let deleteId = null;
+  function current(){ return roles()[sel] || roles()[Object.keys(roles())[0]]; }
+  function setDirty(v){ document.getElementById('save-btn').disabled = !v; }
+
+  function renderHead() {
+    const hub = isHub();
+    document.getElementById('page-title').textContent = hub ? 'Role templates' : 'Roles & permissions';
+    document.getElementById('page-sub-note').textContent = hub ? 'the library copied into every new customer' : 'this customer’s own roles';
+    document.getElementById('clone-label').textContent = hub ? 'Create new template' : 'Create custom role';
+    // The explainer is only useful in the preset library; a customer's own roles need no banner.
+    document.getElementById('mode-note').hidden = !hub;
+    document.getElementById('mode-title').textContent = 'Template library';
+    document.getElementById('mode-desc').textContent = 'New customers start with these roles. Editing a template never changes a customer already onboarded.';
+  }
+
+  function renderList() {
+    const R = roles();
+    const entries = Object.entries(R);
+    const fromPreset = entries.filter(([, r]) => r.fromPreset);
+    const own = entries.filter(([, r]) => !r.fromPreset);
+    const empty = (t) => '<div class="r-meta" style="padding:6px 12px;color:var(--colors-light-muted-foreground);font-size:12px;">' + t + '</div>';
+    document.getElementById('role-list').innerHTML = isHub()
+      ? '<div class="role-sep">Templates</div>' + entries.map(([id, r]) => item(id, r)).join('')
+      : '<div class="role-sep">From templates</div>' + (fromPreset.map(([id, r]) => item(id, r)).join('') || empty('None.')) +
+        '<div class="role-sep">Added for this customer</div>' + (own.map(([id, r]) => item(id, r)).join('') || empty('None yet — create a role.'));
+    document.querySelectorAll('.role-item').forEach(el => el.addEventListener('click', (e) => {
+      if (e.target.closest('[data-menu-btn]')) { e.stopPropagation(); openRowMenu(el.querySelector('[data-menu-btn]'), el.dataset.id); return; }
+      sel = el.dataset.id; render(); setDirty(false);
+    }));
+  }
+  function item(id, r) {
+    const count = Object.values(r.perms).filter(Boolean).length;
+    return `<div class="role-item ${id === sel ? 'sel' : ''}" data-id="${id}">
+      <div class="r-body"><div class="r-name">${r.name}</div><div class="r-meta">${count} permission${count === 1 ? '' : 's'}</div></div>
+      <button class="btn btn-ghost btn-icon-sm row-act" data-menu-btn aria-label="Actions"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+    </div>`;
+  }
+  function openRowMenu(btn, id) {
+    window.AEDARMenu.open(btn, [
+      { label: 'Rename', action: 'rename' },
+      { separator: true },
+      { label: isHub() ? 'Delete template' : 'Delete role', destructive: true, action: 'delete' },
+    ], (a) => { if (a === 'rename') openRename(id); else if (a === 'delete') confirmDelete(id); });
+  }
+  function openRename(id) {
+    renameId = id;
+    const r = roles()[id];
+    document.getElementById('dlg-rename-desc').textContent = 'Rename “' + r.name + '”.';
+    const inp = document.getElementById('rename-input'); inp.value = r.name;
+    window.AEDARDialog.open('dlg-rename'); setTimeout(() => inp.focus(), 60);
+  }
+  function confirmDelete(id) {
+    const R = roles(); const r = R[id]; if (!r) return;
+    if (Object.keys(R).length <= 1) { AEDARToast.show({ variant: 'error', title: 'Cannot delete', description: 'At least one role must remain.' }); return; }
+    deleteId = id;
+    const count = Object.values(r.perms).filter(Boolean).length;
+    document.getElementById('dlg-del-title').textContent = isHub() ? 'Delete this template?' : 'Delete this role?';
+    document.getElementById('dlg-del-desc').textContent = '“' + r.name + '” · ' + count + ' permission' + (count === 1 ? '' : 's') + '.';
+    document.getElementById('dlg-del-note').textContent = isHub()
+      ? 'This cannot be undone. New customers will no longer start with this role; customers already onboarded keep their copy.'
+      : 'This cannot be undone. Users currently assigned to this role lose its permissions.';
+    document.getElementById('del-go').textContent = isHub() ? 'Delete template' : 'Delete role';
+    window.AEDARDialog.open('dlg-delete');
+  }
+  function deleteRole(id) {
+    const R = roles(); const r = R[id]; if (!r) return;
+    delete R[id];
+    if (sel === id) sel = Object.keys(R)[0];
+    AEDARToast.show({ variant: 'error', title: isHub() ? 'Template deleted' : 'Role deleted', description: r.name });
+    render(); setDirty(true);
+  }
+  function renderPerms() {
+    const r = current();
+    document.getElementById('role-title').textContent = r.name;
+    document.getElementById('role-desc').textContent = r.desc;
+    document.getElementById('perms').innerHTML = PERM_GROUPS.map(g => `
+      <div class="perm-group">
+        <div class="perm-group-head">${g.g}</div>
+        ${g.perms.map(([k, label, desc]) => `
+          <div class="perm-row">
+            <div class="perm-label">${label}<div class="desc">${desc}</div></div>
+            <input type="checkbox" class="switch" data-perm="${k}" ${r.perms[k] ? 'checked' : ''}>
+          </div>`).join('')}
+      </div>`).join('');
+    document.querySelectorAll('[data-perm]').forEach(cb => cb.addEventListener('change', () => { r.perms[cb.dataset.perm] = cb.checked; renderList(); setDirty(true); }));
+  }
+  function render(){ renderHead(); if (!roles()[sel]) sel = Object.keys(roles())[0]; renderList(); renderPerms(); }
+  window.addEventListener('aedar:customer', () => { render(); setDirty(false); });
+
+  document.getElementById('clone-btn').addEventListener('click', () => {
+    document.getElementById('clone-name').value = '';
+    document.getElementById('dlg-clone-title').textContent = isHub() ? 'Create new template' : 'Create custom role';
+    document.getElementById('dlg-clone-desc').textContent = isHub()
+      ? 'A role template for new customers.'
+      : 'A role for this customer only.';
+    const bs = document.getElementById('base-select');
+    bs.querySelector('.combobox-value').textContent = 'Blank (no permissions)';
+    bs.querySelectorAll('.combobox-item').forEach(i => i.classList.toggle('is-selected', i.dataset.value === 'blank'));
+    window.AEDARDialog.open('dlg-clone');
+  });
+  document.getElementById('clone-save').addEventListener('click', () => {
+    const name = document.getElementById('clone-name').value.trim(); if (!name) return;
+    const base = [...document.querySelectorAll('#base-select .combobox-item')].find(i => i.classList.contains('is-selected'))?.dataset.value || 'blank';
+    const R = roles();
+    const perms = base === 'blank' ? all(false) : { ...(R[base] || PRESETS[base]).perms };
+    const desc = base === 'blank' ? (isHub() ? 'New template.' : 'Added for this customer.') : 'Based on ' + (R[base] || PRESETS[base]).name + '.';
+    const id = 'c' + Date.now();
+    R[id] = { name, desc, preset: isHub(), perms };
+    sel = id; AEDARToast.show({ variant: 'success', title: isHub() ? 'Template created' : 'Role created', description: name + ' is ready to edit.' });
+    render(); setDirty(true);
+  });
+  document.getElementById('del-go').addEventListener('click', () => { if (deleteId) { deleteRole(deleteId); deleteId = null; } });
+  document.getElementById('rename-save').addEventListener('click', () => {
+    const val = document.getElementById('rename-input').value.trim(); if (!val || !renameId) return;
+    const R = roles(); if (!R[renameId]) return;
+    R[renameId].name = val; AEDARToast.show({ title: 'Renamed', description: val });
+    render(); setDirty(true);
+  });
+  document.getElementById('save-btn').addEventListener('click', () => {
+    AEDARToast.show({ variant: 'success', title: 'Saved', description: isHub() ? 'Templates updated for future customers.' : 'Roles updated for this customer.' });
+    setDirty(false);
+  });
+
+  setDirty(false);
+  render();
+});
+</script>
+</body>
+</html>

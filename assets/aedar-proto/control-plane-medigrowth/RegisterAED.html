@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR Control Plane — Register AED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/cp-inventory-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/cp-nav.js" defer></script>
+<style>
+.crumbs{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--colors-light-muted-foreground);margin-bottom:16px}
+.crumbs svg{width:14px;height:14px}
+.crumbs a{color:var(--colors-light-muted-foreground);text-decoration:none}
+.crumbs a:hover{color:var(--colors-light-foreground)}
+.tabs{display:flex;gap:4px;padding:4px;background:var(--colors-light-muted);border-radius:10px;width:fit-content}
+.tab{appearance:none;border:0;background:transparent;font:inherit;font-size:14px;font-weight:500;color:var(--colors-light-muted-foreground);padding:8px 18px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab.on{background:var(--colors-light-background);color:var(--colors-light-foreground);box-shadow:0 1px 2px rgba(16,24,40,.08)}
+.tab .cnt{font-size:12px;font-variant-numeric:tabular-nums;background:var(--colors-light-muted);border-radius:999px;padding:1px 7px}
+.tab.on .cnt{background:var(--colors-light-muted)}
+.opt-bar{display:flex;gap:10px;align-items:stretch;margin:20px 0 4px}
+.opt{flex:1;text-align:left;background:var(--colors-light-background);border:1px solid var(--colors-light-border);border-radius:12px;padding:16px 18px;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:4px;position:relative}
+.opt.on{border-color:var(--colors-light-primary);box-shadow:0 0 0 3px color-mix(in oklch,var(--colors-light-primary) 14%,transparent)}
+.opt .t{font-size:15px;font-weight:600}
+.opt .d{font-size:12.5px;color:var(--colors-light-muted-foreground);line-height:1.45}
+.opt .rec{position:absolute;top:12px;right:12px;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--status-operational);background:var(--status-operational-soft);border-radius:999px;padding:2px 8px}
+.grid-wrap{overflow:auto;max-height:52vh;border-top:1px solid var(--colors-light-border)}
+table.gr{width:100%;min-width:820px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+table.gr th{position:sticky;top:0;z-index:2;background:var(--colors-light-muted);font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--colors-light-muted-foreground);text-align:left;padding:9px 8px;border-bottom:1px solid var(--colors-light-border);box-sizing:border-box}
+table.gr th .fill{float:right;appearance:none;border:0;background:transparent;color:var(--colors-light-muted-foreground);cursor:pointer;padding:0;line-height:1;display:none}
+table.gr th:hover .fill{display:block}
+table.gr td{border-bottom:1px solid var(--colors-light-border);padding:0;box-sizing:border-box;background:var(--colors-light-background)}
+table.gr td.ix{padding:0 10px;font-size:12px;color:var(--colors-light-muted-foreground);font-variant-numeric:tabular-nums;text-align:right;background:var(--colors-light-muted)}
+.cell{width:100%;border:0;background:transparent;font:inherit;font-size:13px;padding:11px 8px;outline:none;box-sizing:border-box;color:var(--colors-light-foreground)}
+.cell.mono{font-family:var(--font-mono)}
+.cell:focus{box-shadow:inset 0 0 0 2px var(--colors-light-primary);border-radius:4px}
+.cell::placeholder{color:color-mix(in oklch,var(--colors-light-muted-foreground) 60%,transparent)}
+tr.bad .cell.mono{color:var(--colors-light-destructive);font-weight:500}
+tr.bad td:first-child{box-shadow:inset 3px 0 0 var(--colors-light-destructive)}
+tr.bad td.ix{color:var(--colors-light-destructive);font-weight:600}
+.whytag{display:block;font-size:10.5px;font-weight:500;color:var(--colors-light-destructive);padding:0 8px 8px;margin-top:-8px}
+tr.bad td{background:color-mix(in oklch,var(--colors-light-destructive) 5%,var(--colors-light-background))}
+tr.ready td.ix{color:var(--status-operational);font-weight:600}
+.cb-cell{width:100%}
+.cb-cell .combobox-trigger{border:0;background:transparent;box-shadow:none;border-radius:0;height:auto;min-height:0;padding:11px 8px;font-size:13px}
+.cb-cell .combobox-trigger:focus-visible{box-shadow:inset 0 0 0 2px var(--colors-light-primary);border-radius:4px}
+.cb-cell .combobox-value{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rowdel{appearance:none;border:0;background:transparent;color:var(--colors-light-muted-foreground);cursor:pointer;padding:8px;display:flex;opacity:0}
+tr:hover .rowdel{opacity:1}
+.addrow{display:block;width:100%;text-align:left;appearance:none;border:0;border-bottom:1px solid var(--colors-light-border);background:var(--colors-light-background);font:inherit;font-size:13px;color:var(--colors-light-muted-foreground);padding:13px 16px;cursor:pointer}
+.addrow-err{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--colors-light-destructive);padding:13px 16px;background:color-mix(in oklch,var(--colors-light-destructive) 5%,var(--colors-light-background));border-bottom:1px solid var(--colors-light-border)}
+.addrow[hidden]{display:none}
+.addrow:hover{background:var(--colors-light-muted);color:var(--colors-light-foreground)}
+.gr-foot{display:flex;align-items:center;gap:14px;padding:14px 16px;border-top:1px solid var(--colors-light-border)}
+.gr-foot .sum{font-size:13px;color:var(--colors-light-muted-foreground)}
+.gr-foot .sum b{color:var(--colors-light-foreground);font-variant-numeric:tabular-nums}
+.drop{display:flex;flex-direction:column;align-items:center;gap:10px;padding:26px;border:1px dashed var(--colors-light-border);border-radius:12px;background:var(--colors-light-muted);color:var(--colors-light-muted-foreground);font-size:13.5px;text-align:center}
+.drop b{color:var(--colors-light-foreground);font-weight:600}
+.drop.on{border-color:var(--colors-light-primary);background:color-mix(in oklch,var(--colors-light-primary) 6%,var(--colors-light-background))}
+#dlg-upload .drop{margin:0}
+.or{display:flex;align-items:center;gap:12px;margin:16px 0;font-size:12px;color:var(--colors-light-muted-foreground)}
+.or:before,.or:after{content:"";height:1px;background:var(--colors-light-border);flex:1}
+.paste{width:100%;min-height:190px;resize:vertical;font-family:var(--font-mono);font-size:13px;line-height:1.7;padding:14px;border:1px dashed var(--colors-light-border);border-radius:10px;background:var(--colors-light-muted);color:var(--colors-light-foreground);box-sizing:border-box;outline:none}
+.paste:focus{border-color:var(--colors-light-primary);background:var(--colors-light-background)}
+.hintrow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;font-size:12.5px;color:var(--colors-light-muted-foreground)}
+.steps{display:flex;gap:0;margin-bottom:4px}
+.step{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--colors-light-muted-foreground);padding-right:22px}
+.step .n{width:22px;height:22px;border-radius:999px;background:var(--colors-light-muted);display:grid;place-items:center;font-size:11.5px;font-weight:600}
+.step.on{color:var(--colors-light-foreground);font-weight:500}
+.step.on .n{background:var(--colors-light-primary);color:var(--colors-light-primary-foreground)}
+.step.done .n{background:var(--status-operational-soft);color:var(--status-operational)}
+.shared{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.kbd{font-family:var(--font-mono);font-size:11px;background:var(--colors-light-muted);border:1px solid var(--colors-light-border);border-bottom-width:2px;border-radius:5px;padding:1px 5px}
+.map-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.map-col{min-width:0}
+.map-col label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--colors-light-muted-foreground);margin-bottom:6px}
+.map-col .samp{font-family:var(--font-mono);font-size:11.5px;color:var(--colors-light-muted-foreground);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pane[hidden],.mode[hidden]{display:none}
+#p-prev{min-width:0}
+#p-prev td.ell{white-space:nowrap;text-overflow:ellipsis}
+#p-prev td.ell .cell{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+select.input{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+</style>
+</head>
+<body class="app">
+<div data-cp-nav data-cp-mode="mg" data-active="inventory"></div>
+
+<main class="app-page">
+  <div class="crumbs">
+    <a href="Inventory.html">Device inventory</a>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    <span>Bulk register</span>
+  </div>
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Bulk register AED</h1>
+      <div class="page-sub"><span>Add several AED units to the pool at once</span><span class="sep"></span><span id="pool-lbl">—</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-ghost" id="dl-template" type="button"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg>Download CSV template</button>
+      <button class="btn btn-outline" data-dialog-open="dlg-upload" type="button"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg>Upload CSV</button>
+    </div>
+  </div>
+
+  <!-- BULK -->
+  <div class="pane" id="pane-bulk">
+    <!-- A: grid -->
+    <div class="mode" id="mode-grid">
+      <div class="panel" style="margin-top:16px;">
+        <div class="alert soft destructive" id="g-limit" hidden style="margin:0 16px 12px;"><svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div class="alert-body"><span class="alert-title" id="g-limit-title"></span><span class="alert-desc" id="g-limit-txt"></span></div></div>
+        <div class="alert soft warning" id="g-alert" hidden style="margin:0 16px 14px;"><svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg><div class="alert-body"><span class="alert-desc" id="g-alert-txt"></span></div></div>
+        <div class="grid-wrap" style="max-height:56vh;"><table class="gr" id="grid">
+          <thead><tr>
+            <th style="width:36px;"></th>
+            <th style="width:190px;">Serial <span class="req">*</span></th>
+            <th style="width:80px;">Model<button class="fill" data-fill="model" title="Fill down">⤓</button></th>
+            <th style="width:170px;">Customer<button class="fill" data-fill="cust" title="Fill down">⤓</button></th>
+            <th style="width:180px;">Group<button class="fill" data-fill="group" title="Fill down">⤓</button></th>
+            <th style="min-width:150px;">Installation site<button class="fill" data-fill="site" title="Fill down">⤓</button></th>
+            <th style="width:36px;"></th>
+          </tr></thead>
+          <tbody id="grid-body"></tbody>
+        </table></div>
+        <button class="addrow" id="g-add" type="button">+ Add new row</button>
+        <div class="addrow-err" id="g-add-err" hidden><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Maximum 100 rows per batch — register these first, then start a new batch.</div>
+        <div class="gr-foot">
+          <span class="sum" id="g-sum">—</span>
+          <div class="spacer" style="flex:1"></div>
+          <button class="btn btn-ghost" id="g-reset">Clear all</button>
+          <button class="btn btn-default" id="g-save">Register devices</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="dialog-overlay" id="dlg-clear" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Clear all rows?</span><span class="dialog-desc" id="clear-desc">Everything typed or imported into the grid will be discarded. Nothing has been registered yet.</span></div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Keep editing</button>
+      <button class="btn btn-destructive" id="clear-go">Clear all rows</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="dlg-upload" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Upload a CSV</span><span class="dialog-desc">One row per device. A header row is detected automatically.</span></div>
+    <div class="dialog-body">
+      <div class="drop" id="p-drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg><div><b>Drop a CSV here</b> or <button class="btn btn-outline btn-sm" id="p-file-btn" type="button">Choose file</button></div><input type="file" id="p-file" accept=".csv,.tsv,.txt" hidden /></div>
+      
+    </div>
+    <div class="dialog-footer"><button class="btn btn-outline" data-dialog-close>Cancel</button></div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script src="../components/cp-register-bulk.js?v=1787242061702"></script>
+</body>
+</html>

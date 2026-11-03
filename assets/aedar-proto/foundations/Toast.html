@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Toast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<script src="../components/toast.js" defer></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .card { background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 12px; padding: 28px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .statics { display: flex; flex-direction: column; gap: 16px; max-width: 388px; }
+  /* static (non-fixed) previews reuse .toast look */
+  .toast.static { position: relative; transform: none; opacity: 1; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Toast</h1>
+    <p class="lede">Transient confirmations — <strong>device added</strong>, <strong>alert resolved</strong>, <strong>save failed</strong>. 388px card, radius 8, title + description, optional action. Stacks bottom-right and auto-dismisses (hover to pause). Errors use the destructive fill. Trigger them below.</p>
+  </header>
+
+  <section>
+    <div class="sec-head"><h2>Trigger</h2><span class="note">appears bottom-right · hover to pause</span></div>
+    <div class="card">
+      <div class="row">
+        <button class="btn btn-default" onclick="AEDARToast.show({variant:'success',title:'Device added',description:'AED-0150 assigned to Province A · Hospital A.'})">Success</button>
+        <button class="btn btn-outline" onclick="AEDARToast.show({variant:'info',title:'Telemetry refreshed',description:'42 devices updated just now.'})">Info</button>
+        <button class="btn btn-outline" onclick="AEDARToast.show({variant:'warning',title:'Low battery',description:'AED — Cafeteria dropped to 22%.',action:{label:'View'}})">Warning</button>
+        <button class="btn btn-destructive" onclick="AEDARToast.show({variant:'error',title:'Save failed',description:'Could not reach the server. Try again.',action:{label:'Retry'}})">Error</button>
+        <button class="btn btn-secondary" onclick="AEDARToast.show({title:'Contact added',description:'อรุณี will be notified of rescue events.',action:{label:'Undo'}})">Default + action</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Static anatomy -->
+  <section>
+    <div class="sec-head"><h2>Variants</h2><span class="note">static reference</span></div>
+    <div class="card">
+      <div class="statics">
+        <div class="toast success static show">
+          <span class="toast-lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></span>
+          <div class="toast-content"><span class="toast-title">Device added</span><span class="toast-desc">AED-0150 assigned to Province A · Hospital A.</span></div>
+          <button class="toast-close" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="toast static show">
+          <div class="toast-content"><span class="toast-title">Contact added</span><span class="toast-desc">อรุณี will be notified of rescue events.</span></div>
+          <button class="btn btn-outline btn-sm toast-action">Undo</button>
+          <button class="toast-close" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="toast error static show">
+          <span class="toast-lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></span>
+          <div class="toast-content"><span class="toast-title">Save failed</span><span class="toast-desc">Could not reach the server. Try again.</span></div>
+          <button class="btn btn-destructive btn-sm toast-action">Retry</button>
+          <button class="toast-close" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

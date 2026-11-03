@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Inputs & form fields</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<script src="../components/combobox.js" defer></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 660px; margin: 0 0 44px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .card { background: var(--colors-light-background); border: 1px solid var(--colors-light-border); border-radius: 12px; padding: 28px; }
+
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px 36px; }
+  .state-cap { font-family: var(--font-mono); font-size: 11px; color: var(--colors-light-muted-foreground); margin-top: 8px; }
+  .controls-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px 40px; align-items: start; }
+  .ctl-block .ctl-title { font-size: 13px; font-weight: 500; margin-bottom: 14px; }
+  .ctl-stack { display: flex; flex-direction: column; gap: 14px; }
+  .form-narrow { max-width: 420px; }
+  .form-stack { display: flex; flex-direction: column; gap: 20px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Inputs &amp; form fields</h1>
+    <p class="lede">Text inputs, selects, textareas and selection controls used in every dialog and form (add contact, assign device, add user). All <strong>36px</strong> tall, radius <strong>8px</strong>, Inter 14. Focus is a <strong>Healix-blue ring</strong>; errors turn the border red. Everything below is live — type, tab, toggle.</p>
+  </header>
+
+  <!-- Input states -->
+  <section>
+    <div class="sec-head"><h2>Text input — states</h2><span class="note">click / tab to focus</span></div>
+    <div class="card grid4">
+      <div><input class="input" placeholder="Placeholder text" /><div class="state-cap">enabled</div></div>
+      <div><input class="input" value="District 1" /><div class="state-cap">filled</div></div>
+      <div><input class="input is-error" value="—" /><div class="state-cap">error · #C84747</div></div>
+      <div><input class="input" placeholder="Disabled" disabled /><div class="state-cap">disabled · 50%</div></div>
+    </div>
+  </section>
+
+  <!-- Field anatomy -->
+  <section>
+    <div class="sec-head"><h2>Field anatomy</h2><span class="note">label · control · help / error</span></div>
+    <div class="card grid2">
+      <div class="field">
+        <label class="field-label" for="f1">Device name <span class="req">*</span></label>
+        <input class="input" id="f1" placeholder="e.g. AED — Level 3 Lobby" />
+        <span class="field-help">Shown in the device list and on the map pin.</span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="f2">Serial number <span class="req">*</span></label>
+        <input class="input is-error" id="f2" value="AED-004" />
+        <span class="field-error">Serial must be 8 characters (e.g. AED-0042).</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Select -->
+  <section>
+    <div class="sec-head"><h2>Select</h2><span class="note">design-system menu · not the OS pane</span></div>
+    <div class="card grid2">
+      <div class="field">
+        <label class="field-label">Role</label>
+        <div class="combobox" data-select>
+          <button type="button" class="combobox-trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="combobox-value">Select role…</span>
+            <svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="combobox-popover is-select" hidden>
+            <div class="combobox-list" role="listbox">
+              <div class="combobox-item is-selected" role="option" data-value="lead">Emergency response lead</div>
+              <div class="combobox-item" role="option" data-value="facilities">Facilities manager</div>
+              <div class="combobox-item" role="option" data-value="nurse">Ward nurse</div>
+              <div class="combobox-item" role="option" data-value="security">Security officer</div>
+            </div>
+          </div>
+        </div>
+        <span class="field-help">Opens a styled menu with hover &amp; selected states.</span>
+      </div>
+      <div class="field">
+        <label class="field-label">Status filter</label>
+        <div class="combobox has-value" data-select>
+          <button type="button" class="combobox-trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="combobox-value">All statuses</span>
+            <svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="combobox-popover is-select" hidden>
+            <div class="combobox-list" role="listbox">
+              <div class="combobox-item is-selected" role="option" data-value="all">All statuses</div>
+              <div class="combobox-item" role="option" data-value="operational">Operational</div>
+              <div class="combobox-item" role="option" data-value="warning">Warning</div>
+              <div class="combobox-item" role="option" data-value="offline">Offline</div>
+            </div>
+          </div>
+        </div>
+        <span class="field-help">Single-select, no search — for short option lists.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Combobox + textarea -->
+  <section>
+    <div class="sec-head"><h2>Combobox &amp; textarea</h2><span class="note">searchable list · open &amp; type</span></div>
+    <div class="card grid2">
+      <div class="field">
+        <label class="field-label">Assigned org node</label>
+        <div class="combobox" data-combobox>
+          <button type="button" class="combobox-trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="combobox-value">Select org node…</span>
+            <svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg>
+          </button>
+          <div class="combobox-popover" hidden>
+            <div class="combobox-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input class="combobox-search-input" placeholder="Search nodes…" />
+            </div>
+            <div class="combobox-list" role="listbox">
+              <div class="combobox-group-label">Province A</div>
+              <div class="combobox-item" role="option" data-value="bkk-er">Hospital A</div>
+              <div class="combobox-item" role="option" data-value="bkk-icu">Hospital B</div>
+              <div class="combobox-item" role="option" data-value="bkk-lobby">City Hall</div>
+              <div class="combobox-item" role="option" data-value="bkk-opd">School A</div>
+              <div class="combobox-group-label">District 2</div>
+              <div class="combobox-item" role="option" data-value="cm-er">Hospital A</div>
+              <div class="combobox-item" role="option" data-value="cm-ward">Hospital C</div>
+              <div class="combobox-group-label">District 3</div>
+              <div class="combobox-item" role="option" data-value="pk-er">Hospital A</div>
+              <div class="combobox-item" role="option" data-value="pk-rehab">Hospital D</div>
+            </div>
+          </div>
+        </div>
+        <span class="field-help">Narrows which staff can see this device.</span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="t1">Installation note</label>
+        <textarea class="input" id="t1" placeholder="Mounted on the east wall, beside the elevator lobby…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- Selection controls -->
+  <section>
+    <div class="sec-head"><h2>Selection controls</h2><span class="note">checkbox · radio · switch — all live</span></div>
+    <div class="card controls-grid">
+      <div class="ctl-block">
+        <div class="ctl-title">Checkbox</div>
+        <div class="ctl-stack">
+          <div class="control-row"><input type="checkbox" class="checkbox" id="c1" checked /><label for="c1">Email alerts</label></div>
+          <div class="control-row"><input type="checkbox" class="checkbox" id="c2" /><label for="c2">SMS alerts</label></div>
+          <div class="control-row"><input type="checkbox" class="checkbox" id="c3" checked disabled /><label for="c3">Required (locked)</label></div>
+        </div>
+      </div>
+      <div class="ctl-block">
+        <div class="ctl-title">Radio</div>
+        <div class="ctl-stack">
+          <div class="control-row"><input type="radio" name="r" class="radio" id="r1" checked /><label for="r1">All devices</label></div>
+          <div class="control-row"><input type="radio" name="r" class="radio" id="r2" /><label for="r2">My scope only</label></div>
+          <div class="control-row"><input type="radio" name="r" class="radio" id="r3" disabled /><label for="r3">Custom (locked)</label></div>
+        </div>
+      </div>
+      <div class="ctl-block">
+        <div class="ctl-title">Switch</div>
+        <div class="ctl-stack">
+          <div class="control-row"><input type="checkbox" class="switch" id="w1" checked /><label for="w1">Maintenance mode</label></div>
+          <div class="control-row"><input type="checkbox" class="switch" id="w2" /><label for="w2">Auto-resolve alerts</label></div>
+          <div class="control-row"><input type="checkbox" class="switch" id="w3" disabled /><label for="w3">Beta telemetry (locked)</label></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Realistic form -->
+  <section>
+    <div class="sec-head"><h2>In context — Add contact</h2><span class="note">how fields compose in a dialog</span></div>
+    <div class="card">
+      <div class="form-narrow form-stack">
+        <div class="field">
+          <label class="field-label" for="n1">Full name <span class="req">*</span></label>
+          <input class="input" id="n1" placeholder="ชื่อ-นามสกุล" />
+        </div>
+        <div class="field">
+          <label class="field-label">Role</label>
+          <div class="combobox" data-select>
+            <button type="button" class="combobox-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="combobox-value">Select role…</span>
+              <svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="combobox-popover is-select" hidden>
+              <div class="combobox-list" role="listbox">
+                <div class="combobox-item" role="option" data-value="lead">Emergency response lead</div>
+                <div class="combobox-item" role="option" data-value="facilities">Facilities manager</div>
+                <div class="combobox-item" role="option" data-value="nurse">Ward nurse</div>
+                <div class="combobox-item" role="option" data-value="security">Security officer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="n3">Phone <span class="req">*</span></label>
+          <input class="input" id="n3" placeholder="+66" />
+        </div>
+        <div class="control-row"><input type="checkbox" class="checkbox" id="n4" checked /><label for="n4">Notify on rescue events at assigned sites</label></div>
+        <div class="control-row" style="justify-content:flex-end; gap:12px; margin-top:4px;">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-default">Add contact</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Color tokens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Geist", system-ui, sans-serif;
+    background: var(--colors-light-muted);
+    color: var(--colors-light-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  /* Header */
+  .masthead { margin-bottom: 44px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--colors-light-muted-foreground);
+    margin-bottom: 14px;
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 640px; margin: 0; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+
+  /* Section */
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .flag {
+    display: inline-block; font-size: 11px; font-weight: 500;
+    padding: 2px 8px; border-radius: 9999px;
+    background: var(--status-warning-soft); color: rgb(146, 116, 0);
+    margin-left: 8px; vertical-align: middle;
+  }
+
+  .card {
+    background: var(--colors-light-background);
+    border: 1px solid var(--colors-light-border);
+    border-radius: 12px;
+    padding: 6px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 2px; }
+
+  .swatch {
+    display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: center;
+    padding: 12px 14px; border-radius: 8px;
+  }
+  .swatch:hover { background: var(--colors-light-muted); }
+  .chip {
+    width: 44px; height: 44px; border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+  }
+  .meta { min-width: 0; }
+  .tk-name { font-size: 13px; font-weight: 500; color: var(--colors-light-foreground); line-height: 1.3; }
+  .tk-desc { font-size: 12px; color: var(--colors-light-muted-foreground); line-height: 1.35; margin-top: 1px; }
+  .tk-val {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 11px; color: var(--colors-light-muted-foreground);
+    margin-top: 5px; letter-spacing: -0.01em;
+  }
+
+  /* Ramp */
+  .ramp { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--colors-light-border); }
+  .ramp .step { flex: 1; height: 56px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; }
+  .ramp .step span { font-family: "Geist Mono", monospace; font-size: 10px; opacity: 0.85; }
+  .ramp-row { margin-bottom: 12px; }
+  .ramp-label { font-size: 12px; font-weight: 500; margin-bottom: 6px; color: var(--colors-light-muted-foreground); }
+  .ramps { padding: 18px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Color tokens</h1>
+    <p class="lede">The shared palette for both the <strong>Customer App</strong> and the <strong>Control Plane</strong>. Values are pulled verbatim from the Healix-branded Figma variable collections (light theme). Device <strong>status colors</strong> are sourced from the monitoring map-pin symbols.</p>
+  </header>
+
+  <div id="sections"></div>
+
+</div>
+
+<script>
+const groups = [
+  {
+    title: "Brand & interactive",
+    note: "Healix primary drives all interactive states",
+    tokens: [
+      ["Primary", "Buttons, links, active nav, selected pins", "--colors-light-primary", "rgb(14,110,183)"],
+      ["Primary foreground", "Text/icons on primary", "--colors-light-primary-foreground", "rgb(255,255,255)"],
+      ["Secondary", "Subtle brand fills, secondary buttons", "--colors-light-secondary", "rgb(234,246,255)"],
+      ["Secondary foreground", "Text on secondary", "--colors-light-secondary-foreground", "rgb(30,58,138)"],
+      ["Accent", "Hover fills, highlighted rows", "--colors-light-accent", "rgb(224,242,254)"],
+      ["Accent foreground", "Text on accent", "--colors-light-accent-foreground", "rgb(0,134,201)"],
+      ["Ring", "Focus ring", "--colors-light-ring", "rgb(149,189,255)"],
+    ],
+  },
+  {
+    title: "Surfaces & text",
+    note: "Neutral warm-grays",
+    tokens: [
+      ["Background", "App canvas", "--colors-light-background", "rgb(255,255,255)"],
+      ["Foreground", "Primary text", "--colors-light-foreground", "rgb(51,51,51)"],
+      ["Card", "Panels, cards", "--colors-light-card", "rgb(253,253,253)"],
+      ["Muted", "Recessed surfaces, page bg", "--colors-light-muted", "rgb(249,250,251)"],
+      ["Muted foreground", "Secondary text, placeholders", "--colors-light-muted-foreground", "rgb(165,165,165)"],
+      ["Popover", "Menus, tooltips", "--colors-light-popover", "rgb(255,255,255)"],
+      ["Border", "Dividers, card borders", "--colors-light-border", "rgb(235,235,235)"],
+      ["Input", "Field fills", "--colors-light-input", "rgb(241,241,241)"],
+    ],
+  },
+  {
+    title: "Device status — AED",
+    note: "From monitoring map-pin symbols",
+    tokens: [
+      ["Operational", "Online · all good", "--status-operational", "rgb(52,199,89)"],
+      ["Warning", "Needs attention", "--status-warning", "rgb(233,186,0)"],
+      ["To validate", "Pending validation", "--status-validate", "rgb(30,58,138)"],
+      ["In use", "Rescue event in progress", "--status-in-use", "rgb(200,71,71)"],
+      ["Offline", "No signal / unreachable", "--status-offline", "rgb(165,165,165)"],
+    ],
+  },
+  {
+    title: "Feedback — destructive",
+    note: "Errors, delete, alerts",
+    tokens: [
+      ["Destructive", "Destructive actions, errors", "--colors-light-destructive", "rgb(200,71,71)"],
+      ["Destructive foreground", "Text on destructive", "--colors-light-destructive-foreground", "rgb(255,255,255)"],
+      ["Destructive bg 10%", "Alert row / banner fill", "--colors-light-bg-destructive-10", "rgba(220,38,38,0.1)"],
+      ["Destructive border 50%", "Alert card border", "--colors-red-200", "rgb(254,202,202)"],
+    ],
+  },
+  {
+    title: "Battery levels",
+    flag: "Proposed — confirm on device detail",
+    note: "Reuses the status ramp",
+    tokens: [
+      ["Battery good", "Healthy charge", "--battery-good", "rgb(52,199,89)"],
+      ["Battery low", "Order replacement soon", "--battery-low", "rgb(233,186,0)"],
+      ["Battery critical", "Replace now", "--battery-critical", "rgb(200,71,71)"],
+    ],
+  },
+];
+
+const ramps = [
+  ["Primary blue (chart / brand ramp)", ["--blue-100","--blue-200","--blue-300","--blue-400","--blue-500","--blue-600","--blue-700","--blue-800","--blue-900"], "--foreground"],
+  ["Neutral (slate)", ["--slate-100","--slate-200","--slate-300","--slate-400","--slate-500","--slate-600","--slate-700","--slate-800","--slate-900"], "--foreground"],
+  ["Success (green)", ["--green-100","--green-200","--green-300","--green-400","--green-500","--green-600","--green-700","--green-800","--green-900"], "--foreground"],
+  ["Warning (amber)", ["--amber-100","--amber-200","--amber-300","--amber-400","--amber-500","--amber-600","--amber-700","--amber-800","--amber-900"], "--foreground"],
+  ["Danger (red)", ["--red-100","--red-200","--red-300","--red-400","--red-500","--red-600","--red-700","--red-800","--red-900"], "--foreground"],
+];
+
+const root = document.getElementById("sections");
+
+for (const g of groups) {
+  const sec = document.createElement("section");
+  sec.innerHTML = `
+    <div class="sec-head">
+      <h2>${g.title}${g.flag ? `<span class="flag">${g.flag}</span>` : ""}</h2>
+      <span class="note">${g.note}</span>
+    </div>`;
+  const card = document.createElement("div");
+  card.className = "card";
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  for (const [name, desc, varName, val] of g.tokens) {
+    const el = document.createElement("div");
+    el.className = "swatch";
+    el.innerHTML = `
+      <div class="chip" style="background:${val}"></div>
+      <div class="meta">
+        <div class="tk-name">${name}</div>
+        <div class="tk-desc">${desc}</div>
+        <div class="tk-val">${varName}</div>
+      </div>`;
+    grid.appendChild(el);
+  }
+  card.appendChild(grid);
+  sec.appendChild(card);
+  root.appendChild(sec);
+}
+
+// Ramps
+const rsec = document.createElement("section");
+rsec.innerHTML = `<div class="sec-head"><h2>Primitive ramps</h2><span class="note">Tailwind scale — for charts & data viz</span></div>`;
+const rcard = document.createElement("div");
+rcard.className = "card ramps";
+for (const [label, steps, fg] of ramps) {
+  const row = document.createElement("div");
+  row.className = "ramp-row";
+  const stepsHtml = steps.map((s, i) => {
+    const shade = (i + 1) * 100;
+    const light = i < 4;
+    return `<div class="step" style="background:var(${s});color:${light ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.9)"}"><span>${shade}</span></div>`;
+  }).join("");
+  row.innerHTML = `<div class="ramp-label">${label}</div><div class="ramp">${stepsHtml}</div>`;
+  rcard.appendChild(row);
+}
+rsec.appendChild(rcard);
+root.appendChild(rsec);
+</script>
+</body>
+</html>

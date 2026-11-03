@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR Control Plane — Log in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); color: var(--colors-light-foreground); background: var(--colors-light-background); -webkit-font-smoothing: antialiased; }
+  .auth { min-height: 100vh; display: flex; }
+  .auth-left { position: relative; flex: 1 1 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 32px; overflow: hidden; }
+  .auth-left::before {
+    content: ""; position: absolute; top: -180px; left: 50%; transform: translateX(-50%); width: 760px; height: 760px; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(14,110,183,0.16) 1px, transparent 1.4px);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+    mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+    opacity: .8;
+  }
+  .auth-form { position: relative; width: 360px; max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 32px; }
+  .auth-brand { display: flex; align-items: center; gap: 10px; }
+  .auth-logo { height: 40px; }
+  .auth-head { text-align: center; display: flex; flex-direction: column; gap: 10px; }
+  .auth-title { font-size: 30px; font-weight: 600; line-height: 38px; letter-spacing: -0.01em; color: rgb(16,24,40); }
+  .auth-sub { font-size: 16px; font-weight: 400; line-height: 24px; color: rgb(71,84,103); }
+  .auth-fields { width: 100%; display: flex; flex-direction: column; gap: 20px; }
+  .pw-row { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  .pw-row .field { width: 100%; }
+  .auth-actions { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+  .auth-foot { position: absolute; bottom: 24px; left: 32px; font-size: 14px; color: rgb(71,84,103); }
+  .btn-full { width: 100%; }
+  .link-btn { background: none; border: none; padding: 0; font-family: var(--font-sans); font-weight: 500; font-size: 14px; color: var(--colors-light-primary); cursor: pointer; }
+  .link-btn.sm { font-size: 14px; }
+  .link-btn:hover { text-decoration: underline; }
+  [data-view] { display: none; }
+  [data-view].active { display: flex; flex-direction: column; align-items: center; gap: 32px; }
+  .auth.full .auth-right { display: none; }
+  .auth.full .auth-left { justify-content: flex-start; padding-top: 11vh; }
+  .auth-form.reset { width: 440px; }
+  .reset-card { width: 100%; border: 1px solid var(--colors-light-border); border-radius: 12px; background: var(--colors-light-background); box-shadow: 0 1px 3px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.1); padding: 24px 8px 16px; display: flex; flex-direction: column; gap: 16px; }
+  .reset-card .field { padding: 0 8px; }
+  .reset-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 8px; }
+  /* Right panel: internal / control-plane treatment instead of the customer hero photo */
+  .auth-right { flex: 1 1 50%; position: relative; background: #0b1220; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 56px; overflow: hidden; }
+  .auth-right::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 48px 48px; -webkit-mask-image: radial-gradient(circle at 30% 25%, #000 0%, transparent 78%); mask-image: radial-gradient(circle at 30% 25%, #000 0%, transparent 78%); }
+  .auth-right::after { content: ""; position: absolute; top: -120px; right: -120px; width: 520px; height: 520px; border-radius: 9999px; background: radial-gradient(circle, rgba(14,110,183,.55), transparent 65%); }
+  .hero-copy { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; max-width: 460px; }
+  .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.62); }
+  .hero-title { font-size: 34px; line-height: 42px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .hero-sub { font-size: 15px; line-height: 24px; color: rgba(255,255,255,.7); margin: 0; }
+  @media (max-width: 900px) { .auth-right { display: none; } }
+</style>
+</head>
+<body>
+<div class="auth">
+  <div class="auth-left">
+    <div class="auth-form" data-view="login">
+      <div class="auth-brand"><img class="auth-logo" src="../components/assets/healix-wordmark.svg" alt="Healix" /><span class="cp-badge">Control Plane</span></div>
+      <div class="auth-head">
+        <span class="auth-title">Sign in to Control Plane</span>
+      </div>
+      <div class="auth-fields">
+        <div class="field"><label class="field-label" for="email">Work email</label><input class="input" id="email" type="email" placeholder="you@medigrowth.co.th" /></div>
+        <div class="pw-row">
+          <div class="field"><label class="field-label" for="pw">Password</label><input class="input" id="pw" type="password" placeholder="••••••••" /></div>
+          <button class="link-btn sm" type="button" data-goto="forgot">Forgot password</button>
+        </div>
+      </div>
+      <div class="auth-actions">
+        <button class="btn btn-default btn-full" onclick="location.href='Customers.html'">Sign in</button>
+      </div>
+    </div>
+
+    <div class="auth-form reset" data-view="forgot">
+      <div class="auth-brand"><img class="auth-logo" src="../components/assets/healix-wordmark.svg" alt="Healix" /><span class="cp-badge">Control Plane</span></div>
+      <div class="auth-head">
+        <span class="auth-title">Reset your password</span>
+        <span class="auth-sub">Enter your MediGrowth email to receive a reset link.</span>
+      </div>
+      <div class="reset-card">
+        <div class="field"><label class="field-label" for="remail">Work email</label><input class="input" id="remail" type="email" placeholder="you@medigrowth.co.th" /></div>
+        <div class="reset-foot">
+          <button class="btn btn-outline" data-goto="login">Back</button>
+          <button class="btn btn-default" id="send-reset">Send reset link</button>
+        </div>
+      </div>
+    </div>
+
+    <span class="auth-foot">© MediGrowth · Internal</span>
+  </div>
+  <div class="auth-right">
+    <div class="hero-copy">
+      <span class="hero-eyebrow">MediGrowth internal</span>
+      <h1 class="hero-title">Operate every AED fleet from one place.</h1>
+      <p class="hero-sub">Provision devices, manage customer organisations, and keep the field ready.</p>
+    </div>
+  </div>
+</div>
+
+<script src="../components/toast.js" defer></script>
+<script>
+  const auth = document.querySelector('.auth');
+  const views = document.querySelectorAll('[data-view]');
+  function go(name) {
+    views.forEach((v) => v.classList.toggle('active', v.dataset.view === name));
+    auth.classList.toggle('full', name !== 'login');
+  }
+  document.querySelectorAll('[data-goto]').forEach((b) => b.addEventListener('click', () => go(b.dataset.goto)));
+  let timer = null;
+  document.getElementById('send-reset').addEventListener('click', function () {
+    const email = (document.getElementById('remail').value || 'you@medigrowth.co.th').trim();
+    if (window.AEDARToast) AEDARToast.show({ variant: 'info', title: 'Check your email', description: "We've sent a password reset link to: " + email, duration: 6000 });
+    const btn = this;
+    let n = 30; btn.disabled = true;
+    const tick = () => { btn.textContent = 'Resend in ' + n + ' s.'; if (n-- <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = 'Resend link'; } };
+    tick(); clearInterval(timer); timer = setInterval(tick, 1000);
+  });
+  go('login');
+</script>
+</body>
+</html>

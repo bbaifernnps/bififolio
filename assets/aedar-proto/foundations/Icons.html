@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Icons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 32px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  .toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .search { position: relative; flex-grow: 1; max-width: 360px; }
+  .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--colors-light-muted-foreground); pointer-events: none; }
+  .search .input { padding-left: 34px; }
+  .count { font-size: 13px; color: var(--colors-light-muted-foreground); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1px; background: var(--colors-light-border); border: 1px solid var(--colors-light-border); border-radius: 12px; overflow: hidden; }
+  .cell { background: var(--colors-light-background); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 22px 10px 16px; cursor: pointer; transition: background-color .1s; }
+  .cell:hover { background: var(--colors-light-muted); }
+  .cell svg { width: 24px; height: 24px; color: var(--colors-light-foreground); }
+  .cell .nm { font-family: var(--font-mono); font-size: 10.5px; color: var(--colors-light-muted-foreground); text-align: center; line-height: 1.35; word-break: break-word; }
+  .cell.copied .nm { color: var(--status-operational); }
+  .empty { padding: 40px; text-align: center; color: var(--colors-light-muted-foreground); }
+  .usage { margin-top: 32px; font-size: 13px; color: var(--colors-light-muted-foreground); line-height: 1.6; }
+  .usage code { font-family: var(--font-mono); background: var(--colors-light-background); border: 1px solid var(--colors-light-border); padding: 2px 6px; border-radius: 4px; color: var(--colors-light-foreground); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Icons</h1>
+    <p class="lede">The working <strong>Lucide</strong> icon set — every glyph the AEDAR screens use plus the common UI icons — migrated from Figma into one <code style="font-family:var(--font-mono)">icon-data</code> file. Icons paint with <strong>currentColor</strong>, so they inherit text color. Search below; click any icon to copy its name.</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input class="input" id="q" placeholder="Search icons…" />
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>No icons match that search.</div>
+
+  <p class="usage">Full library available on demand — the file carries ~1,554 Lucide glyphs; more can be migrated any time. Rendered from <code>components/icons/icon-data.js</code>; in React use <code>&lt;Icon name="LucideIconsBell" /&gt;</code>, or read the raw <code>{ viewBox, body }</code> data directly.</p>
+</div>
+
+<script type="module">
+import ICONS from '../components/icons/icon-data.js';
+const grid = document.getElementById('grid');
+const empty = document.getElementById('empty');
+const countEl = document.getElementById('count');
+const q = document.getElementById('q');
+const entries = Object.entries(ICONS);
+
+function human(name) {
+  return name.replace(/^LucideIcons/, '').replace(/([A-Z])/g, ' $1').trim();
+}
+function renderAll() {
+  grid.innerHTML = entries.map(([name, { viewBox, body }]) =>
+    `<div class="cell" data-name="${name}" data-search="${human(name).toLowerCase()} ${name.toLowerCase()}" title="${name}">
+       <svg viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg">${body}</svg>
+       <span class="nm">${human(name)}</span>
+     </div>`).join('');
+  filter('');
+}
+function filter(query) {
+  query = query.trim().toLowerCase();
+  let n = 0;
+  grid.querySelectorAll('.cell').forEach((c) => {
+    const match = !query || c.dataset.search.includes(query);
+    c.hidden = !match; if (match) n++;
+  });
+  empty.hidden = n > 0;
+  countEl.textContent = `${n} icon${n === 1 ? '' : 's'}`;
+}
+grid.addEventListener('click', (e) => {
+  const cell = e.target.closest('.cell'); if (!cell) return;
+  const name = cell.dataset.name;
+  if (navigator.clipboard) navigator.clipboard.writeText(name);
+  const nm = cell.querySelector('.nm'); const orig = nm.textContent;
+  cell.classList.add('copied'); nm.textContent = 'Copied!';
+  setTimeout(() => { cell.classList.remove('copied'); nm.textContent = orig; }, 900);
+});
+q.addEventListener('input', () => filter(q.value));
+renderAll();
+</script>
+</body>
+</html>

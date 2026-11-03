@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Typography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background: var(--colors-light-muted);
+    color: var(--colors-light-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--colors-light-muted-foreground); margin-bottom: 14px;
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 640px; margin: 0 0 44px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .flag {
+    display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 9999px;
+    background: var(--status-warning-soft); color: rgb(146, 116, 0); margin-left: 8px; vertical-align: middle;
+  }
+  .card {
+    background: var(--colors-light-background);
+    border: 1px solid var(--colors-light-border);
+    border-radius: 12px;
+  }
+
+  /* Font families */
+  .families { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--colors-light-border); border-radius: 12px; overflow: hidden; }
+  .family { background: var(--colors-light-background); padding: 24px; }
+  .family .role { font-size: 12px; font-weight: 500; color: var(--colors-light-muted-foreground); letter-spacing: 0.03em; text-transform: uppercase; }
+  .family .name { font-size: 26px; margin: 8px 0 4px; letter-spacing: -0.01em; }
+  .family .glyphs { font-size: 22px; color: var(--colors-light-foreground); margin: 14px 0 4px; }
+  .family .use { font-size: 13px; color: var(--colors-light-muted-foreground); line-height: 1.5; }
+
+  /* Scale rows */
+  .scale-row {
+    display: grid; grid-template-columns: 190px 1fr 132px; gap: 24px; align-items: baseline;
+    padding: 18px 22px; border-bottom: 1px solid var(--colors-light-border);
+  }
+  .scale-row:last-child { border-bottom: none; }
+  .scale-row .cls { font-family: var(--font-mono); font-size: 12px; color: var(--colors-light-accent-foreground); }
+  .scale-row .cls .tag { display: block; font-size: 11px; color: var(--colors-light-muted-foreground); margin-top: 4px; }
+  .scale-row .spec { font-family: var(--font-mono); font-size: 11px; color: var(--colors-light-muted-foreground); text-align: right; }
+  .sample { color: var(--colors-light-foreground); }
+
+  /* Weights */
+  .weights { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .weight { padding: 22px 24px; border-right: 1px solid var(--colors-light-border); }
+  .weight:last-child { border-right: none; }
+  .weight .big { font-size: 34px; letter-spacing: -0.01em; }
+  .weight .lbl { font-family: var(--font-mono); font-size: 11px; color: var(--colors-light-muted-foreground); margin-top: 8px; }
+
+  /* Bilingual */
+  .bi { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--colors-light-border); border-radius: 12px; overflow: hidden; }
+  .bi > div { background: var(--colors-light-background); padding: 24px; }
+  .bi .tag { font-size: 12px; font-weight: 500; color: var(--colors-light-muted-foreground); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 14px; }
+  .bi .en-title { font: 600 20px/28px var(--font-sans); letter-spacing: -0.01em; }
+  .bi .th-title { font: 600 20px/30px var(--font-thai); }
+  .bi .en-body { font: 400 14px/22px var(--font-sans); color: var(--colors-light-muted-foreground); margin-top: 8px; }
+  .bi .th-body { font: 400 14px/24px var(--font-thai); color: var(--colors-light-muted-foreground); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Typography</h1>
+    <p class="lede"><strong>Inter</strong> is the primary UI typeface across both apps; default body text is 14px. Every product screen (Monitoring, RBAC, Group Management, Login) uses it. The file defines no named text styles, so the scale below is promoted from the Typography variable collection into reusable classes. Thai is the default locale (PRD D19).</p>
+  </header>
+
+  <!-- Font families -->
+  <section>
+    <div class="sec-head"><h2>Typefaces</h2><span class="note">3 in use · 1 kit default</span></div>
+    <div class="families">
+      <div class="family">
+        <div class="role">Primary · Sans</div>
+        <div class="name" style="font-family:var(--font-sans)">Inter</div>
+        <div class="glyphs" style="font-family:var(--font-sans)">AaBbCc 0123456789</div>
+        <div class="use">All interface text, headings, buttons, tables — every AEDAR product screen. Weights 400 / 500 / 600 / 700.</div>
+      </div>
+      <div class="family">
+        <div class="role">Monospace · Data</div>
+        <div class="name" style="font-family:var(--font-mono)">JetBrains Mono</div>
+        <div class="glyphs" style="font-family:var(--font-mono)">SN·AED-0042 · 84%</div>
+        <div class="use">Serial numbers, telemetry values, coordinates, timestamps.</div>
+      </div>
+      <div class="family">
+        <div class="role">Thai · Brand <span class="flag">Noto Sans Thai stands in for GraphikTH</span></div>
+        <div class="name" style="font-family:var(--font-thai)">Noto Sans Thai</div>
+        <div class="glyphs" style="font-family:var(--font-thai)">สวัสดี · เครื่อง AED</div>
+        <div class="use">Thai copy. Brand uses GraphikTH (not web-available) — confirm the web substitute.</div>
+      </div>
+      <div class="family">
+        <div class="role">shadcn kit default · not used</div>
+        <div class="name" style="font-family:'Geist',sans-serif;color:var(--colors-light-muted-foreground)">Geist</div>
+        <div class="glyphs" style="font-family:'Geist',sans-serif;color:var(--colors-light-muted-foreground)">AaBbCc 0123</div>
+        <div class="use">Appears only in the untouched shadcn/ui component-library reference sheets. Not part of the AEDAR type system.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Type scale -->
+  <section>
+    <div class="sec-head"><h2>Type scale &amp; roles</h2><span class="note">Inter · class → size/line-height/weight</span></div>
+    <div class="card" id="scale"></div>
+  </section>
+
+  <!-- Weights -->
+  <section>
+    <div class="sec-head"><h2>Weights</h2><span class="note">Inter</span></div>
+    <div class="card weights">
+      <div class="weight"><div class="big" style="font-weight:400">Aedar</div><div class="lbl">400 · Regular</div></div>
+      <div class="weight"><div class="big" style="font-weight:500">Aedar</div><div class="lbl">500 · Medium</div></div>
+      <div class="weight"><div class="big" style="font-weight:600">Aedar</div><div class="lbl">600 · SemiBold</div></div>
+      <div class="weight"><div class="big" style="font-weight:700">Aedar</div><div class="lbl">700 · Bold</div></div>
+    </div>
+  </section>
+
+  <!-- Bilingual -->
+  <section>
+    <div class="sec-head"><h2>Bilingual pairing</h2><span class="note">Thai default · English secondary</span></div>
+    <div class="bi">
+      <div>
+        <div class="tag">ไทย · Thai</div>
+        <div class="th-title">ภาพรวมอุปกรณ์</div>
+        <div class="th-body">เครื่อง AED ทั้งหมด 42 เครื่อง · ออนไลน์ 39 · ต้องตรวจสอบ 3 เครื่อง อัปเดตล่าสุดเมื่อ 2 นาทีที่แล้ว</div>
+      </div>
+      <div>
+        <div class="tag">English</div>
+        <div class="en-title">Device overview</div>
+        <div class="en-body">42 AED units total · 39 online · 3 need validation. Last updated 2 minutes ago.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const scale = [
+  [".t-display", "Dashboard hero, KPI headline", "30 / 36 · 600", 'font:600 30px/36px var(--font-sans);letter-spacing:-0.02em', "Emergency-ready in 42 sites"],
+  [".t-title", "Page title", "24 / 32 · 600", 'font:600 24px/32px var(--font-sans);letter-spacing:-0.015em', "Device overview"],
+  [".t-heading", "Section heading", "20 / 28 · 600", 'font:600 20px/28px var(--font-sans);letter-spacing:-0.01em', "Open maintenance alerts"],
+  [".t-subheading", "Card / panel heading", "18 / 28 · 500", 'font:500 18px/28px var(--font-sans)', "Location history"],
+  [".t-card-title", "Card title, list group", "16 / 24 · 500", 'font:500 16px/24px var(--font-sans)', "Bangkok General Hospital"],
+  [".t-body", "Default body / table cell", "14 / 20 · 400", 'font:400 14px/20px var(--font-sans)', "AED unit installed on Level 3, near the east elevator lobby."],
+  [".t-body-strong", "Emphasised body", "14 / 20 · 500", 'font:500 14px/20px var(--font-sans)', "39 of 42 devices online"],
+  [".t-label", "Form label", "14 / 20 · 500", 'font:500 14px/20px var(--font-sans)', "Assigned org node"],
+  [".t-small", "Meta, caption, timestamp", "12 / 16 · 400", 'font:400 12px/16px var(--font-sans)', "Updated 2 minutes ago"],
+  [".t-mono", "Serial no. · telemetry", "14 mono · 400", 'font:400 14px/20px var(--font-mono);letter-spacing:-0.01em', "SN·AED-0042 — batt 84% — 13.7563, 100.5018"],
+];
+const el = document.getElementById("scale");
+el.innerHTML = scale.map(([cls, tag, spec, style, sample]) => `
+  <div class="scale-row">
+    <div class="cls">${cls}<span class="tag">${tag}</span></div>
+    <div class="sample" style="${style}">${sample}</div>
+    <div class="spec">${spec}</div>
+  </div>`).join("");
+</script>
+</body>
+</html>

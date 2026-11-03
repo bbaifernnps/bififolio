@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR Control Plane — User provisioning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/cp-inventory-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/cp-pager.js" defer></script>
+<script src="../components/cp-nav.js" defer></script>
+<style>
+  .u-name-cell { display: flex; align-items: center; gap: 10px; }
+  .u-av { width: 32px; height: 32px; border-radius: 9999px; background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 12px; flex-shrink: 0; }
+  .u-created { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .u-created-email { font-size: 13px; color: var(--colors-light-muted-foreground); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+</head>
+<body class="app">
+<div data-cp-nav data-cp-mode="mg" data-active="provisioning"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">User provisioning</h1>
+      <div class="page-sub"><span>All customers</span><span class="sep"></span><span>users MediGrowth creates on a customer’s behalf</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-default" data-dialog-open="dlg-create-user"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Invite new user</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-toolbar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="q" placeholder="Search users…" /></div>
+      <div class="spacer"></div>
+      <div class="combobox has-value" data-select id="cust-select" style="width:220px;">
+        <button type="button" class="combobox-trigger"><span class="combobox-value">All customers</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox" id="custfilter">
+          <div class="combobox-item is-selected" data-value="all">All customers</div>
+          <div class="combobox-item" data-value="cmi">Province A</div>
+          <div class="combobox-item" data-value="cri">Province B</div>
+          <div class="combobox-item" data-value="pkt">Province C</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="dt-wrap">
+      <table class="dt">
+        <thead><tr>
+          <th class="sortable" data-sort="name"><span class="th-inner">Name<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="role"><span class="th-inner">Role<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="position"><span class="th-inner">Position<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="group"><span class="th-inner">Group<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="byEmail"><span class="th-inner">Created by<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" style="width:150px;" data-sort="created"><span class="th-inner">Created on<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="sortable" data-sort="status"><span class="th-inner">Status<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="col-actions"></th>
+        </tr></thead>
+        <tbody id="dt-body"></tbody>
+      </table>
+    </div>
+    <div id="dt-foot"></div>
+  </div>
+</main>
+
+<!-- Create user dialog -->
+<div class="dialog-overlay" id="dlg-create-user" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Invite new user</span><span class="dialog-desc">Invite a user into a customer group.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Customer <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="u-cust">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select customer…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden><div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search customers…" /></div><div class="combobox-list" role="listbox">
+            <div class="combobox-item" data-value="Province A">โครงการ AED Province A</div>
+            <div class="combobox-item" data-value="Province B">โครงการ AED Province B</div>
+            <div class="combobox-item" data-value="Province C">โครงการ AED Province C</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Group <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="u-group">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select group…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden>
+            <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" id="u-group-search" placeholder="Search groups…" /></div>
+            <div class="combobox-list" role="listbox" id="u-group-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Role <span class="req">*</span></label>
+        <div class="combobox" data-select id="u-role">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select role…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox" id="u-role-list"></div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Full name <span class="req">*</span></label><input class="input" id="u-name" placeholder="ชื่อ-นามสกุล" /></div>
+      <div class="field"><label class="field-label">Email <span class="req">*</span></label><input class="input" id="u-email" placeholder="name@hospital.co.th" /></div>
+      <div class="field"><label class="field-label">Position <span style="font-weight:400;color:var(--colors-light-muted-foreground);">(optional)</span></label><input class="input" id="u-position" placeholder="e.g. หัวหน้าฝ่ายพยาบาล" /></div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="create-user-save" data-dialog-close>Send invite</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="dlg-edit-user" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Edit user</span><span class="dialog-desc" id="edit-desc">—</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Full name <span class="req">*</span></label><input class="input" id="e-name" placeholder="ชื่อ-นามสกุล" /></div>
+      <div class="field"><label class="field-label">Group <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="e-group">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select group…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden>
+            <div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" id="e-group-search" placeholder="Search groups…" /></div>
+            <div class="combobox-list" role="listbox" id="e-group-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Role <span class="req">*</span></label>
+        <div class="combobox" data-select id="e-role">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select role…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox" id="e-role-list"></div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Position <span style="font-weight:400;color:var(--colors-light-muted-foreground);">(optional)</span></label><input class="input" id="e-position" placeholder="e.g. หัวหน้าฝ่ายพยาบาล" /></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="edit-save">Save changes</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // Users are per tenant; the nav customer switcher picks the set in view.
+  const TENANTS = {
+    cmi: { users: [
+    { name: 'อรุณี ส.', email: 'arunee@agency.example', created: '2026-02-11T09:14', byEmail: 'provisioning@medigrowth.co.th', role: 'Org Admin', group: 'Hospital A', status: 'active' },
+    { name: 'Somchai P.', email: 'somchai@agency.example', created: '2026-03-02T14:38', byEmail: 'arunee@agency.example', role: 'Editor', group: 'Hospital A', status: 'active' },
+    { name: 'Nok T.', email: 'nok@agency.example', created: '2026-03-02T15:05', byEmail: 'arunee@agency.example', role: 'Viewer', group: 'Hospital A', status: 'active' },
+    { name: 'Wichai R.', email: 'wichai@agency.example', created: '2026-04-17T11:22', byEmail: 'arunee@agency.example', role: 'Maintainer', group: 'Hospital A', status: 'active' },
+    { name: 'Priya M.', email: 'priya@agency.example', created: '2026-05-28T16:47', byEmail: 'provisioning@medigrowth.co.th', role: 'Viewer', group: 'Hospital A', status: 'active' },
+    { name: 'Kittipong W.', email: 'kittipong@agency.example', created: '2026-08-04T10:03', byEmail: 'arunee@agency.example', role: 'Viewer', group: 'Hospital B', status: 'invited' },
+  ] },
+    cri: { users: [
+      { name: 'Somsak T.', email: 'somsak@agency.example', created: '2026-01-23T08:51', byEmail: 'provisioning@medigrowth.co.th', role: 'Org Admin', group: 'Hospital E', status: 'active' },
+      { name: 'Ratchanee K.', email: 'ratchanee@agency.example', created: '2026-02-19T13:26', byEmail: 'somsak@agency.example', role: 'Editor', group: 'Hospital E', status: 'active' },
+      { name: 'Anan B.', email: 'anan@agency.example', created: '2026-07-30T17:12', byEmail: 'somsak@agency.example', role: 'Viewer', group: 'Hospital F', status: 'invited' },
+    ] },
+    pkt: { users: [] },
+  };
+  // Optional free-text job title, captured on invite and shown in the table.
+  const POSITIONS = {
+    'arunee@agency.example': 'ผู้อำนวยการกองสาธารณสุข', 'somchai@agency.example': 'หัวหน้างานเวชระเบียน',
+    'nok@agency.example': 'พยาบาลวิชาชีพ', 'wichai@agency.example': 'ช่างเทคนิคอุปกรณ์การแพทย์',
+    'priya@agency.example': 'เจ้าหน้าที่ธุรการ', 'kittipong@agency.example': '',
+    'somsak@agency.example': 'ผู้อำนวยการกองสาธารณสุข', 'ratchanee@agency.example': 'หัวหน้าฝ่ายพยาบาล', 'anan@agency.example': '',
+  };
+  Object.values(TENANTS).forEach(t => t.users.forEach(u => { if (u.position == null) u.position = POSITIONS[u.email] || ''; }));
+  function scopeId() { return window.AEDARCPScope ? window.AEDARCPScope.get() : 'cmi'; }
+  function tenant() { return TENANTS[scopeId()] || null; }
+  function custLabel(id) { return window.AEDARCPScope ? window.AEDARCPScope.label(id) : id; }
+  function visibleUsers() {
+    const t = custF === 'all' ? null : TENANTS[custF];
+    // Under "All customers" tag each row with its tenant so rows stay distinguishable.
+    if (t) return t.users.map(u => Object.assign(u, { _cust: custLabel(custF) }));
+    return Object.entries(TENANTS).flatMap(([id, x]) => x.users.map(u => Object.assign(u, { _cust: custLabel(id) })));
+  }
+  const roleBadge = { 'Org Admin': 'badge-secondary', 'Editor': 'badge-outline', 'Maintainer': 'badge-outline', 'Viewer': 'badge-outline' };
+  let custF = 'all';
+  let q = '', sortKey = 'name', sortDir = 1, page = 0, pageSize = 12;
+  const STATUS_ORDER = { active: 0, invited: 1, removed: 2 };
+  const sortVal = (u, k) => k === 'status' ? STATUS_ORDER[u.status] : (u[k] || '');
+  function paintHeaders() {
+    document.querySelectorAll('.dt th[data-sort]').forEach(el => {
+      const on = el.dataset.sort === sortKey;
+      el.classList.toggle('sorted', on);
+      const path = el.querySelector('.th-sort path');
+      if (path) path.setAttribute('d', !on ? 'm7 15 5 5 5-5M7 9l5-5 5 5' : (sortDir === 1 ? 'M12 19V5M7 10l5-5 5 5' : 'M12 5v14M7 14l5 5 5-5'));
+    });
+  }
+  document.querySelectorAll('.dt th[data-sort]').forEach(el => el.addEventListener('click', () => {
+    const k = el.dataset.sort;
+    if (k === sortKey) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+    page = 0; render();
+  }));
+  const body = document.getElementById('dt-body');
+
+  // Created by = the account that provisioned this user.
+  const MG_ADMIN = 'provisioning@medigrowth.co.th';
+  function createdCell(u) {
+    return '<div class="u-created"><span class="u-created-email">' + u.byEmail + '</span></div>';
+  }
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function createdOnCell(u) {
+    if (!u.created) return '<span class="dt-sub">—</span>';
+    const [d, t] = u.created.split('T');
+    const [y, m, day] = d.split('-');
+    return '<span>' + (+day) + ' ' + MONTHS[+m - 1] + ' ' + y + '</span><span class="dt-sub" style="margin-left:8px;">· ' + t + '</span>';
+  }
+
+  function render() {
+    const users = visibleUsers();
+    paintHeaders();
+    const data = users.filter(u => !q || (u.name + u.email + u.role + u.byEmail).toLowerCase().includes(q))
+      .sort((a, b) => {
+        const x = sortVal(a, sortKey), y = sortVal(b, sortKey);
+        return (typeof x === 'string' ? x.localeCompare(y, 'th') : x - y) * sortDir;
+      });
+    if (!data.length) {
+      document.getElementById('dt-foot').innerHTML = '';
+      body.innerHTML = '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--colors-light-muted-foreground);font-size:13px;">' +
+        (users.length ? 'No users match your search.' : 'No users yet.') + '</td></tr>';
+      return;
+    }
+    const pages = Math.max(1, Math.ceil(data.length / pageSize));
+    if (page >= pages) page = pages - 1;
+    window.CPPager.render(document.getElementById('dt-foot'), { page, size: pageSize, total: data.length },
+      { onPage: (n) => { page = n; render(); } });
+    body.innerHTML = data.slice(page * pageSize, page * pageSize + pageSize).map(u => {
+      const init = u.name.replace(/[^A-Za-zก-๙]/g, '').slice(0, 2);
+      return `<tr>
+        <td><div class="u-name-cell"><span class="u-av">${init}</span><div class="dt-cell-stack"><span class="dt-primary">${u.name}</span><span class="dt-sub">${u.email}</span></div></div></td>
+        <td><span class="badge ${roleBadge[u.role]}">${u.role}</span></td>
+        <td>${u.position ? u.position : '<span class="dt-sub">—</span>'}</td>
+        <td><div class="dt-cell-stack"><span>${u.group}</span><span class="dt-sub">${u._cust}</span></div></td>
+        <td>${createdCell(u)}</td>
+        <td>${createdOnCell(u)}</td>
+        <td>${u.status === 'active' ? '<span class="badge badge-status badge-operational"><span class="badge-dot"></span>Active</span>' : (u.status === 'invited' ? '<span class="badge badge-status badge-validate"><span class="badge-dot"></span>Invited</span>' : '<span class="badge badge-status badge-offline"><span class="badge-dot"></span>Removed</span>')}</td>
+        <td class="col-actions"><span class="dt-actions"><button class="btn btn-ghost btn-icon" aria-label="Actions" data-menu-btn data-email="${u.email}"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></span></td>
+      </tr>`;
+    }).join('');
+    body.querySelectorAll('[data-menu-btn]').forEach(btn => btn.addEventListener('click', () => {
+      const u = visibleUsers().find(x => x.email === btn.dataset.email);
+      window.AEDARMenu.open(btn, [
+        // Resending only makes sense while the invite is still outstanding.
+        ...(u && u.status === 'invited' ? [{ label: 'Resend invite', action: 'resend' }] : []),
+        { label: 'Edit user', action: 'edit' },
+        { separator: true },
+        { label: 'Remove user', destructive: true, action: 'remove' },
+      ], (a) => {
+        if (a === 'remove') { Object.values(TENANTS).forEach(t => { const i = t.users.indexOf(u); if (i >= 0) t.users.splice(i, 1); }); AEDARToast.show({ variant: 'error', title: 'User removed' }); render(); }
+        else if (a === 'resend') AEDARToast.show({ title: 'Invite resent', description: u.email });
+        else if (a === 'edit') openEditUser(u);
+      });
+    }));
+  }
+  // Create-user pickers cascade: customer → group → role (role sets are per customer).
+  const CUST_GROUPS = window.AEDAR_CP_GROUPS || {}, CUST_ROLES = window.AEDAR_CP_ROLES || {};
+  const KEY = { cmi: 'Province A', cri: 'Province B', pkt: 'Province C' };
+  // Display label vs stored short key: pickers store the key, triggers show the label.
+  const custDisplay = (short) => {
+    const id = Object.keys(KEY).find(k => KEY[k] === short);
+    return (window.AEDARCPScope && id) ? window.AEDARCPScope.label(id) : short;
+  };
+  let uCust = '', uGroup = '', uRole = '';
+  function fillPicker(rootId, listId, options, placeholder, onPick) {
+    const root = document.getElementById(rootId), list = document.getElementById(listId);
+    const valueEl = root.querySelector('.combobox-value');
+    valueEl.textContent = placeholder; root.classList.remove('has-value');
+    list.innerHTML = options.length
+      ? options.map(o => `<div class="combobox-item" data-value="${o}"><span class="combobox-item-label">${o}</span></div>`).join('')
+      : '<div style="padding:8px;font-size:13px;color:var(--colors-light-muted-foreground);">' + (rootId === 'u-role' ? 'Pick a group first' : 'Pick a customer first') + '</div>';
+    // Hand-bound lists need their own type-to-filter (combobox.js binds items once, at init).
+    const search = document.getElementById(rootId + '-search');
+    if (search) {
+      search.value = '';
+      search.oninput = () => {
+        const q = search.value.trim().toLowerCase();
+        list.querySelectorAll('.combobox-item').forEach(it => { it.hidden = !!q && !it.textContent.toLowerCase().includes(q); });
+      };
+    }
+    list.querySelectorAll('.combobox-item[data-value]').forEach(it => it.addEventListener('click', () => {
+      list.querySelectorAll('.combobox-item').forEach(o => o.classList.remove('is-selected'));
+      it.classList.add('is-selected');
+      valueEl.textContent = it.dataset.value; root.classList.add('has-value');
+      list.closest('.combobox-popover').hidden = true;
+      onPick(it.dataset.value);
+    }));
+  }
+  function resetCreateUser() {
+    uCust = '';
+    const cRoot = document.getElementById('u-cust');
+    cRoot.querySelector('.combobox-value').textContent = uCust ? custDisplay(uCust) : 'Select customer…';
+    cRoot.classList.toggle('has-value', !!uCust);
+    cRoot.querySelectorAll('.combobox-item').forEach(i => i.classList.toggle('is-selected', i.dataset.value === uCust));
+    uGroup = ''; uRole = '';
+    fillPicker('u-group', 'u-group-list', CUST_GROUPS[uCust] || [], 'Select group…', (v) => { uGroup = v; fillPicker('u-role', 'u-role-list', CUST_ROLES[uCust] || [], 'Select role…', (r) => { uRole = r; }); });
+    fillPicker('u-role', 'u-role-list', [], 'Select role…', (r) => { uRole = r; });
+   
+  }
+  document.getElementById('u-cust').addEventListener('change', (e) => {
+    uCust = e.detail.value; uGroup = ''; uRole = '';
+    fillPicker('u-group', 'u-group-list', CUST_GROUPS[uCust] || [], 'Select group…', (v) => { uGroup = v; fillPicker('u-role', 'u-role-list', CUST_ROLES[uCust] || [], 'Select role…', (r) => { uRole = r; }); });
+    fillPicker('u-role', 'u-role-list', [], 'Select role…', (r) => { uRole = r; });
+   
+  });
+  // Edit user — name, group, role and position, scoped to that user's customer.
+  let editUser = null, eGroup = '', eRole = '';
+  function custOf(u) {
+    const id = Object.keys(TENANTS).find(k => TENANTS[k].users.includes(u));
+    return KEY[id] || '';
+  }
+  function openEditUser(u) {
+    if (!u) return;
+    editUser = u;
+    const cust = custOf(u);
+    document.getElementById('edit-desc').textContent = u.email;
+    document.getElementById('e-name').value = u.name;
+    document.getElementById('e-position').value = u.position || '';
+    eGroup = u.group; eRole = u.role;
+    fillPicker('e-group', 'e-group-list', CUST_GROUPS[cust] || [], u.group, (v) => { eGroup = v; });
+    fillPicker('e-role', 'e-role-list', CUST_ROLES[cust] || [], u.role, (v) => { eRole = v; });
+    // Lists are portaled to <body> at init, so mark the current option by list id.
+    [['e-group', 'e-group-list', eGroup], ['e-role', 'e-role-list', eRole]].forEach(([rootId, listId, val]) => {
+      document.getElementById(rootId).classList.add('has-value');
+      document.querySelectorAll('#' + listId + ' .combobox-item').forEach(i => i.classList.toggle('is-selected', i.dataset.value === val));
+    });
+    window.AEDARDialog.open('dlg-edit-user');
+  }
+  document.getElementById('edit-save').addEventListener('click', () => {
+    if (!editUser) return;
+    const name = document.getElementById('e-name').value.trim();
+    if (!name) { AEDARToast.show({ variant: 'error', title: 'Full name is required' }); return; }
+    editUser.name = name;
+    editUser.position = document.getElementById('e-position').value.trim();
+    if (eGroup) editUser.group = eGroup;
+    if (eRole) editUser.role = eRole;
+    window.AEDARDialog.close(document.getElementById('dlg-edit-user'));
+    render();
+    AEDARToast.show({ variant: 'success', title: 'User updated', description: name + ' · ' + editUser.role });
+    editUser = null;
+  });
+  document.querySelectorAll('[data-dialog-open="dlg-create-user"]').forEach(b => b.addEventListener('click', resetCreateUser));
+
+  document.getElementById('create-user-save').addEventListener('click', () => {
+    const custId = Object.keys(KEY).find(k => KEY[k] === uCust);
+    const t = TENANTS[custId]; if (!t || !uGroup || !uRole) return;
+    const name = document.getElementById('u-name').value.trim() || 'New User';
+    const email = document.getElementById('u-email').value.trim() || 'new@' + (t.users[0] ? t.users[0].email.split('@')[1] : 'hospital.co.th');
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const created = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+    const position = document.getElementById('u-position').value.trim();
+    t.users.push({ name, email, position, created, byEmail: 'provisioning@medigrowth.co.th', role: uRole, group: uGroup, status: 'invited' });
+    document.getElementById('u-name').value = ''; document.getElementById('u-email').value = ''; document.getElementById('u-position').value = '';
+    AEDARToast.show({ variant: 'success', title: 'User invited', description: name + ' · ' + uRole + ' @ ' + uGroup });
+    render();
+  });
+  // MediGrowth view spans every customer; this filter is a local table filter.
+  document.getElementById('cust-select').addEventListener('change', (e) => { custF = e.detail.value; page = 0; render(); });
+  document.getElementById('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); page = 0; render(); });
+  render();
+});
+</script>
+</body>
+</html>

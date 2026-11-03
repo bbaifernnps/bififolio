@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Alert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+  .stack { display: flex; flex-direction: column; gap: 16px; max-width: 560px; }
+  .ico-tri { } /* placeholder */
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Alert</h1>
+    <p class="lede">Inline banners for persistent, in-page notices — <strong>offline devices</strong>, <strong>scheduled maintenance</strong>, <strong>seat-cap reached</strong>. Radius 8, icon + title (16/500) + description. Variants tint the icon; a <strong>soft</strong> fill raises emphasis. Distinct from toasts, which are transient.</p>
+  </header>
+
+  <!-- Neutral + variants -->
+  <section>
+    <div class="sec-head"><h2>Variants</h2><span class="note">neutral shell · tinted icon</span></div>
+    <div class="stack">
+      <div class="alert">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="alert-body"><span class="alert-title">Heads up</span><span class="alert-desc">Firmware 2.4 rolls out to all AED units next week.</span></div>
+      </div>
+      <div class="alert info">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <div class="alert-body"><span class="alert-title">Scheduled maintenance</span><span class="alert-desc">Monitoring will pause 02:00–03:00 ICT on Sunday for an upgrade.</span></div>
+      </div>
+      <div class="alert warning">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="alert-body"><span class="alert-title">2 devices need attention</span><span class="alert-desc">Low battery on AED — City Hall and AED — Cafeteria.</span></div>
+      </div>
+      <div class="alert success">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+        <div class="alert-body"><span class="alert-title">All clear</span><span class="alert-desc">Every AED at District 2 is operational.</span></div>
+      </div>
+      <div class="alert error">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="alert-body"><span class="alert-title">Device offline</span><span class="alert-desc">AED — Rehab Center hasn't reported for over 24 hours.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Soft fills + actions -->
+  <section>
+    <div class="sec-head"><h2>Soft fills &amp; actions</h2><span class="note">higher emphasis · dismissible</span></div>
+    <div class="stack">
+      <div class="alert soft warning">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="alert-body">
+          <span class="alert-title">Seat limit reached</span>
+          <span class="alert-desc">You've used all 10 seats. Contact MediGrowth to add more before inviting users.</span>
+          <div class="alert-actions"><button class="btn btn-outline btn-sm">Contact MediGrowth</button><button class="btn btn-ghost btn-sm">Dismiss</button></div>
+        </div>
+        <button class="alert-close" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="alert soft error">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <div class="alert-body">
+          <span class="alert-title">Rescue event in progress</span>
+          <span class="alert-desc">AED — East Wing 3 cabinet was opened 2 minutes ago at District 2.</span>
+          <div class="alert-actions"><button class="btn btn-outline btn-sm">View device</button></div>
+        </div>
+        <button class="alert-close" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="alert soft info">
+        <svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="alert-body"><span class="alert-title">Thai is the default language</span><span class="alert-desc">Switch to English anytime from your account menu.</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+document.querySelectorAll('.alert-close, .alert-actions .btn-ghost').forEach((b) =>
+  b.addEventListener('click', (e) => { const a = e.target.closest('.alert'); if (a) { a.style.transition = 'opacity .15s'; a.style.opacity = '0'; setTimeout(() => a.remove(), 160); } }));
+</script>
+</body>
+</html>

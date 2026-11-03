@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/app-nav.js" defer></script>
+<style>
+  .acct { max-width: 720px; }
+  .acct .ui-card { margin-bottom: 20px; }
+  .prof-head { display: flex; align-items: center; gap: 16px; }
+  .prof-av { width: 64px; height: 64px; border-radius: 9999px; background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 22px; flex-shrink: 0; }
+  .prof-who .n { font-size: 18px; font-weight: 600; }
+  .prof-who .r { font-size: 14px; color: var(--colors-light-muted-foreground); margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .pref-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--colors-light-border); }
+  .pref-row:last-child { border-bottom: none; }
+  .pref-row .p-label { font-size: 14px; font-weight: 500; }
+  .pref-row .p-desc { font-size: 13px; color: var(--colors-light-muted-foreground); margin-top: 2px; }
+  .seg { display: inline-flex; background: var(--colors-light-secondary); border-radius: 8px; padding: 4px; gap: 2px; }
+  .seg button { border: none; background: transparent; height: 28px; padding: 0 14px; border-radius: 8px; font-family: var(--font-sans); font-weight: 500; font-size: 14px; color: var(--colors-light-foreground); cursor: pointer; }
+  .seg button.active { background: var(--colors-light-background); box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+</style>
+</head>
+<body class="app">
+<div data-app-nav data-active="" data-scope="Province A · ทั้งหมด"></div>
+
+<main class="app-page acct">
+  <div class="page-head"><div><h1 class="page-title" data-i18n="page.account.title">Account</h1><div class="page-sub" data-i18n="page.account.sub">Manage your profile, language and security.</div></div></div>
+
+  <!-- Profile -->
+  <div class="ui-card">
+    <div class="ui-card-body">
+      <div class="prof-head">
+        <span class="prof-av">อร</span>
+        <div class="prof-who">
+          <div class="n">อรุณี สุขใจ</div>
+          <div class="r"><span class="badge badge-secondary">Org Admin</span> Hospital A · District 1</div>
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:22px;">
+        <div class="field"><label class="field-label">Full name</label><input class="input" value="อรุณี สุขใจ" /></div>
+        <div class="field"><label class="field-label">Phone</label><input class="input" value="+66 81 234 5678" /></div>
+        <div class="field"><label class="field-label">Email</label><input class="input" value="arunee@agency.example" disabled /></div>
+        <div class="field"><label class="field-label">Role &amp; scope</label><input class="input" value="Org Admin · Hospital A" disabled /></div>
+      </div>
+    </div>
+    <div class="ui-card-footer" style="justify-content:flex-end;">
+      <button class="btn btn-default" onclick="AEDARToast.show({variant:'success',title:'Profile saved'})">Save changes</button>
+    </div>
+  </div>
+
+  <!-- Preferences -->
+  <div class="ui-card">
+    <div class="ui-card-header"><div class="ui-card-heading"><span class="ui-card-title">Preferences</span></div></div>
+    <div class="ui-card-body" style="padding-top:6px;">
+      <div class="pref-row">
+        <div><div class="p-label"><span data-i18n="acct.language">Language</span> / ภาษา</div><div class="p-desc" data-i18n="acct.language.desc">Applies to menus and page labels. Device data stays as reported.</div></div>
+        <div class="seg" id="lang">
+          <button data-lang="th">ไทย</button>
+          <button data-lang="en">English</button>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div><div class="p-label">Email notifications</div><div class="p-desc">Maintenance summaries for your scope.</div></div>
+        <input type="checkbox" class="switch" checked />
+      </div>
+      <div class="pref-row">
+        <div><div class="p-label">Rescue-event alerts</div><div class="p-desc">Notify me when a device in my scope is used.</div></div>
+        <input type="checkbox" class="switch" checked />
+      </div>
+    </div>
+  </div>
+
+  <!-- Security -->
+  <div class="ui-card">
+    <div class="ui-card-header"><div class="ui-card-heading"><span class="ui-card-title">Security</span></div></div>
+    <div class="ui-card-body" style="padding-top:6px;">
+      <div class="pref-row">
+        <div><div class="p-label">Password</div><div class="p-desc">Last changed 3 months ago.</div></div>
+        <button class="btn btn-outline" data-dialog-open="dlg-pw">Change password</button>
+      </div>
+      <div class="pref-row">
+        <div><div class="p-label">Sign out</div><div class="p-desc">End your session on this device.</div></div>
+        <a class="btn btn-outline" href="Login.html">Log out</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Change password dialog -->
+<div class="dialog-overlay" id="dlg-pw" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Change password</span><span class="dialog-desc">Use at least 8 characters.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Current password</label><input class="input" type="password" placeholder="••••••••" /></div>
+      <div class="field"><label class="field-label">New password</label><input class="input" type="password" placeholder="••••••••" /></div>
+      <div class="field"><label class="field-label">Confirm new password</label><input class="input" type="password" placeholder="••••••••" /></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" data-dialog-close onclick="AEDARToast.show({variant:'success',title:'Password updated'})">Update password</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // One shared language state (localStorage) drives both this switch and the
+  // account menu in the top bar, so they can never disagree.
+  const seg = [...document.querySelectorAll('#lang button')];
+  const syncLang = () => seg.forEach(b => b.classList.toggle('active', b.dataset.lang === AEDARi18n.get()));
+  seg.forEach(b => b.addEventListener('click', () => AEDARi18n.set(b.dataset.lang)));
+  window.addEventListener('aedar:lang', syncLang);
+  syncLang();
+});
+</script>
+</body>
+</html>

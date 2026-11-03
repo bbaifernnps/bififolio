@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR Control Plane — Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/dialog.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/cp-inventory-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/cp-pager.js" defer></script>
+<script src="../components/cp-nav.js" defer></script>
+<style>
+  .num { font-family: var(--font-mono); }
+  .field[hidden] { display: none; }
+  .unassigned-pill { color: var(--colors-light-muted-foreground); font-style: italic; }
+  .batt-cell { display: flex; flex-direction: column; line-height: 1.3; }
+  .batt-cell .pct { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .batt-cell .guar { font-size: 11px; color: var(--colors-light-muted-foreground); font-variant-numeric: tabular-nums; white-space: nowrap; }
+</style>
+<style>.dt{table-layout:fixed;width:100%}.dt th,.dt td{box-sizing:border-box;overflow:hidden}.dt td.ell{white-space:nowrap;text-overflow:ellipsis}.dt td.col-actions{overflow:visible}</style>
+</head>
+<body class="app">
+<div data-cp-nav data-cp-mode="mg" data-active="inventory"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Device inventory</h1>
+      <div class="page-sub"><span id="count-lbl">—</span><span class="sep"></span><span>AED hardware pool · assign serials to a customer group</span></div>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-outline" href="RegisterAED.html">Bulk register</a><button class="btn btn-default" data-dialog-open="dlg-register"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Register AED</button>
+    </div>
+  </div>
+
+  <div class="tiles" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+    <div class="stat-card selectable selected" data-f="all"><div class="stat-top"><span class="stat-label">Total units</span></div><div class="stat-value" id="k-total">—</div><div class="stat-meta">in the pool</div></div>
+    <div class="stat-card selectable" data-f="assigned"><div class="stat-top"><span class="stat-label">Assigned</span><span class="stat-ico" style="background:var(--status-operational-soft);color:var(--status-operational)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></div><div class="stat-value" id="k-assigned">—</div><div class="stat-meta">bound to a group</div></div>
+    <div class="stat-card selectable" data-f="unassigned"><div class="stat-top"><span class="stat-label">Unassigned</span><span class="stat-ico" style="background:var(--status-warning-soft);color:var(--status-warning)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg></span></div><div class="stat-value" id="k-unassigned">—</div><div class="stat-meta">awaiting assignment</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-toolbar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="q" placeholder="Search serial or model…" /></div>
+      <div class="spacer"></div>
+      <div class="combobox has-value" data-select id="cust-select" style="width:220px;">
+        <button type="button" class="combobox-trigger"><span class="combobox-value">All customers</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox" id="custfilter">
+          <div class="combobox-item is-selected" data-value="all">All customers</div>
+          <div class="combobox-item" data-value="Province A">Province A</div>
+          <div class="combobox-item" data-value="Province B">Province B</div>
+          <div class="combobox-item" data-value="Province C">Province C</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="dt-wrap">
+      <table class="dt">
+        <thead><tr>
+          <th style="width:140px;padding-left:16px;" class="sortable" data-sort="sn"><span class="th-inner">Serial (SN)<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th style="width:84px;" class="sortable" data-sort="model"><span class="th-inner">Model<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th style="width:100px;" class="sortable" data-sort="cust"><span class="th-inner">Customer<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th style="width:84px;" class="sortable" data-sort="group"><span class="th-inner">Group<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th style="width:70px;" class="sortable" data-sort="site"><span class="th-inner">Site<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th style="width:100px;" class="sortable" data-sort="battery"><span class="th-inner">Battery<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th style="width:78px;" class="sortable" data-sort="pads"><span class="th-inner">Pads<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th style="width:122px;" class="sortable" data-sort="state"><span class="th-inner">State<svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th><th class="col-actions" style="width:62px;"></th>
+        </tr></thead>
+        <tbody id="dt-body"></tbody>
+      </table>
+      <div class="empty-state" id="empty" hidden><div class="empty-desc">No units match.</div></div>
+    </div>
+    <div id="dt-foot"></div>
+  </div>
+</main>
+
+<!-- Assign dialog -->
+<div class="dialog-overlay" id="dlg-assign" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Assign device</span><span class="dialog-desc">Bind serial <span class="num" id="assign-sn" style="font-family:var(--font-mono)">—</span> to a customer group.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Customer <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="a-cust">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select customer…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden><div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search customers…" /></div><div class="combobox-list" role="listbox">
+            <div class="combobox-item" data-value="Province A">โครงการ AED Province A</div>
+            <div class="combobox-item" data-value="Province B">โครงการ AED Province B</div>
+            <div class="combobox-item" data-value="Province C">โครงการ AED Province C</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Group <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="a-group">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select group…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden><div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search groups…" /></div><div class="combobox-list" role="listbox" id="a-group-list"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="assign-save" data-dialog-close>Assign device</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Remove serial confirmation -->
+<div class="dialog-overlay" id="dlg-remove" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Remove device from pool?</span><span class="dialog-desc">Serial <span class="num" id="rm-sn" style="font-family:var(--font-mono)"></span> will be de-registered. Register it again if the unit returns.</span></div>
+    <div class="dialog-body"><div class="alert soft warning" id="rm-note" hidden><svg class="alert-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg><div class="alert-body"><span class="alert-desc" id="rm-note-txt"></span></div></div></div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-destructive" id="rm-go">Remove device</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Register serial dialog -->
+<div class="dialog-overlay" id="dlg-register" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Register serial</span><span class="dialog-desc">Add a new AED unit to the pool.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Serial number <span class="req">*</span></label><input class="input" id="reg-sn" placeholder="AED8899231XXX" /></div>
+      <div class="field"><label class="field-label">Model</label>
+        <div class="combobox has-value" data-select>
+          <button type="button" class="combobox-trigger"><span class="combobox-value">F2</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+            <div class="combobox-item is-selected" data-value="F2">F2</div>
+            <div class="combobox-item" data-value="C2">C2</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Installation site <span class="field-hint" style="font-weight:400;color:var(--colors-light-muted-foreground);">(optional)</span></label><input class="input" id="reg-site" placeholder="Installation site" /></div>
+      
+      <div class="field"><label class="field-label">Assign to customer <span class="field-hint" style="font-weight:400;color:var(--colors-light-muted-foreground);">(optional)</span></label>
+        <div class="combobox has-value" data-combobox id="r-cust">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Leave unassigned</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden><div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search customers…" /></div><div class="combobox-list" role="listbox">
+            <div class="combobox-item is-selected" data-value="">Leave unassigned</div>
+            <div class="combobox-item" data-value="Province A">โครงการ AED Province A</div>
+            <div class="combobox-item" data-value="Province B">โครงการ AED Province B</div>
+            <div class="combobox-item" data-value="Province C">โครงการ AED Province C</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field" id="r-group-field" hidden><label class="field-label">Group <span class="req">*</span></label>
+        <div class="combobox" data-combobox id="r-group">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">Select group…</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover" hidden><div class="combobox-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="combobox-search-input" placeholder="Search groups…" /></div><div class="combobox-list" role="listbox" id="r-group-list"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="reg-save">Register</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<!-- Edit device -->
+<div class="dialog-overlay" id="dlg-edit-dev" hidden>
+  <div class="dialog">
+    <div class="dialog-header"><span class="dialog-title">Edit device</span><span class="dialog-desc">Update the registered details of this unit.</span></div>
+    <div class="dialog-body">
+      <div class="field"><label class="field-label">Serial number</label><input class="input" id="ed-sn" disabled /></div>
+      <div class="field"><label class="field-label">Model</label>
+        <div class="combobox has-value" data-select id="ed-model">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">F2</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+            <div class="combobox-item is-selected" data-value="F2">F2</div>
+            <div class="combobox-item" data-value="C2">C2</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="field"><label class="field-label">Installation site <span class="field-hint" style="font-weight:400;color:var(--colors-light-muted-foreground);">(optional)</span></label><input class="input" id="ed-site" placeholder="Installation site" /></div>
+      <div class="field"><label class="field-label">Electrode pad expiry <span class="field-hint" style="font-weight:400;color:var(--colors-light-muted-foreground);">(optional)</span></label><input class="input" type="date" id="ed-pads" /></div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn btn-outline" data-dialog-close>Cancel</button>
+      <button class="btn btn-default" id="ed-save" data-dialog-close>Save changes</button>
+    </div>
+    <button class="dialog-close" data-dialog-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const units = window.AEDAR_CP_UNITS;
+  // ?filter=unassigned lets other pages deep-link into a filtered pool.
+  const urlF = new URLSearchParams(location.search).get('filter');
+  let f = ['all', 'assigned', 'unassigned'].includes(urlF) ? urlF : 'all';
+  let q = '', custF = (window.AEDARCPScope ? window.AEDARCPScope.short() : 'all'), assignSN = null;
+  document.querySelectorAll('.stat-card[data-f]').forEach(c => c.classList.toggle('selected', c.dataset.f === f));
+  const body = document.getElementById('dt-body');
+
+  // Minimum guaranteed use time, prorated from charge (100% = 3 years) — the
+  // same helper the customer app uses, so both sides quote one number.
+  function battCell(u) {
+    const g = window.AEDAR_batteryGuarantee(u.battery);
+    const col = window.aedarBatteryColor(u.battery);
+    return '<div class="batt-cell"><span class="pct" style="color:' + col + '">' + u.battery + '%</span>' +
+      '<span class="guar">\u2248 ' + g.short + ' left</span></div>';
+  }
+  function padCell(u) {
+    const s = window.AEDAR_padStatus(u.pads);
+    return '<div class="batt-cell"><span class="pct" style="color:' + s.color + ';font-size:14px;">' + s.label + '</span><span class="guar">' + s.sub + '</span></div>';
+  }
+  function stats() {
+    const assigned = units.filter(u => u.cust).length;
+    document.getElementById('k-total').textContent = units.length;
+    document.getElementById('k-assigned').textContent = assigned;
+    document.getElementById('k-unassigned').textContent = units.length - assigned;
+  }
+  let sortKey = 'sn', sortDir = 1, page = 0, pageSize = 12;
+  const sortVal = (u, k) => k === 'pads' ? (u.pads || '9999') : k === 'battery' ? u.battery : k === 'state' ? (u.cust ? 0 : 1) : (u[k] || '');
+  function paintHeaders() {
+    document.querySelectorAll('.dt th[data-sort]').forEach(el => {
+      const on = el.dataset.sort === sortKey;
+      el.classList.toggle('sorted', on);
+      const p = el.querySelector('.th-sort path');
+      if (p) p.setAttribute('d', !on ? 'm7 15 5 5 5-5M7 9l5-5 5 5' : (sortDir === 1 ? 'M12 19V5M7 10l5-5 5 5' : 'M12 5v14M7 14l5 5 5-5'));
+    });
+  }
+  document.querySelectorAll('.dt th[data-sort]').forEach(el => el.addEventListener('click', () => {
+    const k = el.dataset.sort;
+    if (k === sortKey) sortDir *= -1; else { sortKey = k; sortDir = k === 'battery' ? -1 : 1; }
+    page = 0; render();
+  }));
+  function filtered() {
+    return units.filter(u => {
+      if (f === 'assigned' && !u.cust) return false;
+      if (f === 'unassigned' && u.cust) return false;
+      if (custF !== 'all' && u.cust !== custF) return false;
+      if (q && !(u.sn + u.model).toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a, b) => {
+      const x = sortVal(a, sortKey), y = sortVal(b, sortKey);
+      return (typeof x === 'string' ? x.localeCompare(y, 'th') : x - y) * sortDir;
+    });
+  }
+  function render() {
+    stats();
+    paintHeaders();
+    const data = filtered();
+    document.getElementById('count-lbl').textContent = units.length + ' units · ' + units.filter(u => !u.cust).length + ' unassigned';
+    document.getElementById('empty').hidden = data.length > 0;
+    const pages = Math.max(1, Math.ceil(data.length / pageSize));
+    if (page >= pages) page = pages - 1;
+    window.CPPager.render(document.getElementById('dt-foot'), { page, size: pageSize, total: data.length },
+      { onPage: (p) => { page = p; render(); } });
+    body.innerHTML = data.slice(page * pageSize, page * pageSize + pageSize).map(u => `
+      <tr class="clickable" data-sn="${u.sn}">
+        <td class="dt-primary" style="font-family:var(--font-mono);padding-left:16px;">${u.sn}</td>
+        <td class="dt-sub">${u.model}</td>
+        <td>${u.cust || '<span class="unassigned-pill">Unassigned</span>'}</td>
+        <td class="ell" title="${u.group||''}">${u.group || '<span class="dt-sub">-</span>'}</td>
+        <td class="ell" title="${u.site||''}">${u.site ? u.site : '<span class="dt-sub">Not set</span>'}</td>
+        <td>${battCell(u)}</td>
+        <td>${padCell(u)}</td>
+        <td>${u.cust ? '<span class="badge badge-status badge-operational"><span class="badge-dot"></span>Assigned</span>' : '<span class="badge badge-status badge-warning"><span class="badge-dot"></span>Unassigned</span>'}</td>
+        <td class="col-actions"><span class="dt-actions"><button class="btn btn-ghost btn-icon" aria-label="Actions" data-menu-btn data-sn="${u.sn}"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></span></td>
+      </tr>`).join('');
+    body.querySelectorAll('tr[data-sn]').forEach(tr => tr.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      location.href = 'DeviceDetail.html?sn=' + encodeURIComponent(tr.dataset.sn);
+    }));
+    body.querySelectorAll('[data-assign]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openAssign(b.dataset.assign); }));
+    body.querySelectorAll('[data-menu-btn]').forEach(b => b.addEventListener('click', () => {
+      const sn = b.dataset.sn;
+      const assigned = !!(units.find(x => x.sn === sn) || {}).cust;
+      window.AEDARMenu.open(b, assigned ? [
+        { label: 'Edit device', action: 'edit' },
+        { label: 'Reassign', action: 'reassign' },
+        { label: 'Unassign', destructive: true, action: 'unassign' },
+        { separator: true },
+        { label: 'Remove from pool', destructive: true, action: 'remove' },
+      ] : [
+        { label: 'Edit device', action: 'edit' },
+        { label: 'Assign to customer', action: 'reassign' },
+        { separator: true },
+        { label: 'Remove from pool', destructive: true, action: 'remove' },
+      ], (a) => {
+        const u = units.find(x => x.sn === sn);
+        if (a === 'edit') { openEdit(sn); return; }
+        if (a === 'unassign') { u.cust = ''; u.group = ''; AEDARToast.show({ variant: 'error', title: 'Device unassigned', description: sn }); render(); }
+        else if (a === 'remove') askRemove(sn);
+        else openAssign(sn);
+      });
+    }));
+  }
+  let edSN = null, edModel = 'F2';
+  document.getElementById('ed-model').addEventListener('change', (e) => { edModel = e.detail.value; });
+  function openEdit(sn) {
+    const u = units.find(x => x.sn === sn);
+    if (!u) return;
+    edSN = sn; edModel = u.model || 'F2';
+    document.getElementById('ed-sn').value = sn;
+    document.getElementById('ed-site').value = u.site || '';
+    document.getElementById('ed-pads').value = u.pads || '';
+    const m = document.getElementById('ed-model');
+    m.querySelector('.combobox-value').textContent = edModel;
+    m.querySelectorAll('.combobox-item').forEach(i => i.classList.toggle('is-selected', i.dataset.value === edModel));
+    window.AEDARDialog.open('dlg-edit-dev');
+  }
+  document.getElementById('ed-save').addEventListener('click', () => {
+    const u = units.find(x => x.sn === edSN);
+    if (!u) return;
+    u.model = edModel;
+    u.site = document.getElementById('ed-site').value.trim();
+    u.pads = document.getElementById('ed-pads').value;
+    AEDARToast.show({ variant: 'success', title: 'Device updated', description: u.site ? edSN + ' · ' + u.site : edSN });
+    render();
+  });
+  let rmSN = null;
+  function askRemove(sn) {
+    rmSN = sn;
+    document.getElementById('rm-sn').textContent = sn;
+    const cur = units.find(x => x.sn === sn);
+    const note = document.getElementById('rm-note');
+    note.hidden = !(cur && cur.cust);
+    if (cur && cur.cust) document.getElementById('rm-note-txt').textContent = 'It is currently assigned to ' + cur.cust + ' · ' + cur.group + ' — removing also unassigns it.';
+    window.AEDARDialog.open('dlg-remove');
+  }
+  document.getElementById('rm-go').addEventListener('click', () => {
+    const i = units.findIndex(x => x.sn === rmSN);
+    if (i > -1) units.splice(i, 1);
+    window.AEDARDialog.close(document.getElementById('dlg-remove'));
+    AEDARToast.show({ variant: 'error', title: 'Device removed', description: rmSN + ' de-registered.' });
+    render();
+  });
+  // Assign dialog state: keep the customer KEY (not the display label) so every
+  // consumer of the shared pool keeps matching.
+  let aCust = '', aGroup = '';
+  const GROUPS = window.AEDAR_CP_GROUPS || {};
+  function resetGroupPicker() {
+    aGroup = '';
+    const list = document.getElementById('a-group-list');
+    const root = document.getElementById('a-group');
+    const valueEl = root.querySelector('.combobox-value');
+    valueEl.textContent = 'Select group…';
+    root.classList.remove('has-value');
+    list.innerHTML = (GROUPS[aCust] || []).map(g => `<div class="combobox-item" data-value="${g}"><span class="combobox-item-label">${g}</span></div>`).join('')
+      || '<div style="padding:8px;font-size:13px;color:var(--colors-light-muted-foreground);">Pick a customer first</div>';
+    if (root.refreshItems) root.refreshItems();
+  }
+  let rCust = '', rGroup = '';
+  function resetRGroupPicker() {
+    rGroup = '';
+    const list = document.getElementById('r-group-list');
+    const root = document.getElementById('r-group');
+    const valueEl = root.querySelector('.combobox-value');
+    valueEl.textContent = 'Select group…';
+    root.classList.remove('has-value');
+    document.getElementById('r-group-field').hidden = !rCust;
+    list.innerHTML = (GROUPS[rCust] || []).map(g => `<div class="combobox-item" data-value="${g}"><span class="combobox-item-label">${g}</span></div>`).join('');
+    if (root.refreshItems) root.refreshItems();
+  }
+  document.getElementById('r-cust').addEventListener('change', (e) => { rCust = e.detail.value; resetRGroupPicker(); });
+  document.getElementById('a-cust').addEventListener('change', (e) => { aCust = e.detail.value; resetGroupPicker(); });
+  document.getElementById('a-group').addEventListener('change', (e) => { aGroup = e.detail.value; });
+  document.getElementById('r-group').addEventListener('change', (e) => { rGroup = e.detail.value; });
+  function openAssign(sn) {
+    assignSN = sn; document.getElementById('assign-sn').textContent = sn;
+    aCust = ''; document.querySelector('#a-cust .combobox-value').textContent = 'Select customer…';
+    document.querySelectorAll('#a-cust .combobox-item').forEach(i => i.classList.remove('is-selected'));
+    resetGroupPicker();
+    window.AEDARDialog.open('dlg-assign');
+  }
+  document.getElementById('assign-save').addEventListener('click', () => {
+    const cust = aCust, group = aGroup;
+    const u = units.find(x => x.sn === assignSN);
+    if (u && cust && group) {
+      u.cust = cust; u.group = group;
+      AEDARToast.show({ variant: 'success', title: 'Device assigned', description: assignSN + ' → ' + cust + ' · ' + group });
+      render();
+    }
+  });
+  document.getElementById('reg-save').addEventListener('click', () => {
+    const input = document.getElementById('reg-sn');
+    const sn = input.value.trim();
+    if (!sn) { input.focus(); AEDARToast.show({ variant: 'error', title: 'Serial number is required' }); return; }
+    // Assignment is optional, but a chosen customer needs a group to bind to.
+    if (rCust && !rGroup) { AEDARToast.show({ variant: 'error', title: 'Pick a group', description: 'Choose the group this unit belongs to, or leave it unassigned.' }); return; }
+    const rSite = document.getElementById('reg-site').value.trim();
+    units.unshift({ sn, battery: 100, model: 'F2', cust: rCust, group: rCust ? rGroup : '', site: rSite, pads: '' });
+    window.AEDARDialog.close(document.getElementById('dlg-register'));
+    AEDARToast.show({ variant: 'success', title: 'Serial registered', description: rCust ? sn + ' → ' + rCust + ' · ' + rGroup : sn + ' added to the pool.' });
+    input.value = '';
+    document.getElementById('reg-site').value = '';
+    rCust = ''; rGroup = '';
+    const rc = document.getElementById('r-cust');
+    rc.querySelector('.combobox-value').textContent = 'Leave unassigned';
+    rc.querySelectorAll('.combobox-item').forEach((i, n) => i.classList.toggle('is-selected', n === 0));
+    resetRGroupPicker();
+    render();
+  });
+
+  const tiles = document.querySelectorAll('.stat-card.selectable');
+  tiles.forEach(t => t.addEventListener('click', () => {
+    f = (t.classList.contains('selected') && t.dataset.f !== 'all') ? 'all' : t.dataset.f;
+    tiles.forEach(x => x.classList.toggle('selected', x.dataset.f === f));
+    render();
+  }));
+  document.getElementById('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); page = 0; render(); });
+  const custSelect = document.getElementById('cust-select');
+  custSelect.addEventListener('change', e => { custF = e.detail.value; page = 0; render(); });
+  // Keep the in-page filter and the nav switcher on the same value.
+  function syncCustSelect() {
+    custSelect.querySelector('.combobox-value').textContent = custF === 'all' ? 'All customers' : custF;
+    custSelect.querySelectorAll('.combobox-item').forEach(i => i.classList.toggle('is-selected', i.dataset.value === custF));
+  }
+  window.addEventListener('aedar:customer', (e) => { custF = e.detail.short; page = 0; syncCustSelect(); render(); });
+  syncCustSelect();
+
+  render();
+});
+</script>
+</body>
+</html>

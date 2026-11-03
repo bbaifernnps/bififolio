@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Alerts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/app-nav.js" defer></script>
+<style>
+  .alert-list { display: flex; flex-direction: column; }
+  .alert-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--colors-light-border); }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-item .a-ico { width: 36px; height: 36px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .alert-item .a-ico svg { width: 18px; height: 18px; }
+  .alert-item.sev-emergency .a-ico { background: var(--status-in-use-soft); color: var(--status-in-use); }
+  .alert-item.sev-warning .a-ico { background: var(--status-warning-soft); color: var(--status-warning); }
+  .alert-item.sev-offline .a-ico { background: var(--status-offline-soft); color: rgb(115,115,115); }
+  .alert-item.sev-info .a-ico { background: var(--colors-light-secondary); color: var(--colors-light-secondary-foreground); }
+  .a-body { flex-grow: 1; min-width: 0; }
+  .a-title { font-size: 14px; font-weight: 500; }
+  .a-sub { font-size: 13px; color: var(--colors-light-muted-foreground); margin-top: 2px; }
+  .a-sub .mono { font-family: var(--font-mono); }
+  .a-time { font-size: 13px; color: var(--colors-light-muted-foreground); white-space: nowrap; }
+  .a-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .resolved-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--status-operational); font-weight: 500; }
+  .resolved-tag svg { width: 15px; height: 15px; }
+  .alert-item.done { opacity: .62; }
+  .tab-panel[hidden] { display: none; }
+</style>
+</head>
+<body class="app">
+<div data-app-nav data-active="alerts" data-scope="Province A · ทั้งหมด"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title" data-i18n="page.alerts.title">Alerts</h1>
+      <div class="page-sub"><span id="open-lbl">3 open</span><span class="sep"></span><span>Province A</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline" id="ack-all"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Acknowledge all</button>
+    </div>
+  </div>
+
+  <div class="tabs-underline" id="tabs" style="margin-bottom:20px;">
+    <button class="tab active" data-panel="p-open">Open <span class="badge-count is-inverted" id="c-open">3</span></button>
+    <button class="tab" data-panel="p-hist">History</button>
+  </div>
+
+  <!-- Open maintenance -->
+  <div class="tab-panel" id="p-open">
+    <div class="panel"><div class="alert-list" id="open-list"></div>
+      <div class="empty-state" id="open-empty" hidden>
+        <div class="empty-ico" style="color:var(--status-operational);background:var(--status-operational-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="empty-title">All caught up</div>
+        <div class="empty-desc">No open maintenance alerts in your scope.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="tab-panel" id="p-hist" hidden>
+    <div class="panel">
+      <div class="panel-toolbar">
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="input" id="q" placeholder="Search alert history…" /></div>
+        <div class="spacer"></div>
+        <div class="combobox has-value" data-select id="type-select" style="width:170px;">
+          <button type="button" class="combobox-trigger"><span class="combobox-value">All types</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox" id="typefilter">
+            <div class="combobox-item is-selected" data-value="all">All types</div>
+            <div class="combobox-item" data-value="emergency">Emergency</div>
+            <div class="combobox-item" data-value="warning">Maintenance</div>
+            <div class="combobox-item" data-value="offline">Offline</div>
+          </div></div>
+        </div>
+      </div>
+      <div class="alert-list" id="hist-list"></div>
+    </div>
+    <p style="font-size:12px;color:var(--colors-light-muted-foreground);margin-top:12px;">History preserves the original scope snapshot at time of alert (PRD D13).</p>
+  </div>
+</main>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const ICONS = {
+    emergency: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13h4l2 4 4-9 2 5h5"/></svg>',
+    warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/></svg>',
+    offline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01M8.5 16.429a5 5 0 0 1 7 0M5 12.859a10 10 0 0 1 5.17-2.69M19 12.859a10 10 0 0 0-2.007-1.523M2 8.82a15 15 0 0 1 4.177-2.643M22 8.82a15 15 0 0 0-11.288-3.764M2 2l20 20"/></svg>',
+    expiry: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  };
+  const sevClass = { emergency: 'sev-emergency', warning: 'sev-warning', offline: 'sev-offline', expiry: 'sev-warning' };
+
+  const open = [
+    { id: 1, sev: 'warning', type: 'warning', ico: 'warning', title: 'Low battery — 22%', dev: 'AED — Cafeteria', sn: 'AED8899231211', time: '9 min ago' },
+    { id: 2, sev: 'warning', type: 'warning', ico: 'warning', title: 'Low battery — 34%', dev: 'AED — อาคารเรียน 1', sn: 'AED8899231203', time: '32 min ago' },
+    { id: 3, sev: 'offline', type: 'offline', ico: 'offline', title: 'Device offline > 24h', dev: 'AED — ห้องกายภาพบำบัด', sn: 'AED8899231302', time: '2 days ago' },
+  ];
+  const history = [
+    { sev: 'emergency', type: 'emergency', ico: 'emergency', title: 'Rescue event — cabinet opened', dev: 'AED — ห้องฉุกเฉิน', sn: 'AED8899231288', time: '14 Jun, 09:12', note: 'Fire-and-forget · notified 2 responders' },
+    { sev: 'warning', type: 'warning', ico: 'expiry', title: 'Electrode pads expiring in 30 days', dev: 'AED — โรงอาหาร', sn: 'AED8899231211', time: '10 Jun, 08:00', note: 'Acknowledged by อรุณี' },
+    { sev: 'warning', type: 'warning', ico: 'warning', title: 'Low battery — cleared', dev: 'AED — OPD ชั้น 1', sn: 'AED8899231202', time: '30 May, 14:22', note: 'Battery replaced' },
+    { sev: 'offline', type: 'offline', ico: 'offline', title: 'Device offline — recovered', dev: 'AED — อาคารกีฬา', sn: 'AED8899231220', time: '22 May, 11:03', note: 'Back online after 3h' },
+    { sev: 'emergency', type: 'emergency', ico: 'emergency', title: 'Rescue event — cabinet opened', dev: 'AED — วอร์ด 3', sn: 'AED8899231289', time: '18 May, 20:41', note: 'Fire-and-forget · notified 3 responders' },
+  ];
+
+  function alertRow(a, resolved) {
+    return `<div class="alert-item ${sevClass[a.sev]} ${resolved ? 'done' : ''}">
+      <span class="a-ico">${ICONS[a.ico]}</span>
+      <div class="a-body">
+        <div class="a-title">${a.title}</div>
+        <div class="a-sub">${a.dev} · <span class="mono">${a.sn}</span>${a.note ? ' · ' + a.note : ''}</div>
+      </div>
+      <span class="a-time">${a.time}</span>
+      <div class="a-actions">
+        ${resolved
+          ? '<span class="resolved-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Resolved</span>'
+          : (a.type === 'emergency' ? '<a class="btn btn-outline btn-sm" href="DeviceDetail.html?sn=' + a.sn + '">View device</a>'
+             : '<a class="btn btn-ghost btn-sm" href="DeviceDetail.html?sn=' + a.sn + '">View</a><button class="btn btn-default btn-sm ack" data-id="' + a.id + '">Acknowledge</button>')}
+      </div>
+    </div>`;
+  }
+
+  function renderOpen() {
+    const list = document.getElementById('open-list');
+    list.innerHTML = open.map(a => alertRow(a, false)).join('');
+    document.getElementById('open-empty').hidden = open.length > 0;
+    document.getElementById('c-open').textContent = open.length;
+    document.getElementById('open-lbl').textContent = open.length + ' open';
+    list.querySelectorAll('.ack').forEach(b => b.addEventListener('click', () => {
+      const id = +b.dataset.id; const idx = open.findIndex(x => x.id === id);
+      if (idx >= 0) { const a = open.splice(idx, 1)[0]; a.note = 'Acknowledged just now'; history.unshift(a); AEDARToast.show({ variant: 'success', title: 'Alert acknowledged', description: a.dev }); renderOpen(); renderHist(); }
+    }));
+  }
+  let q = '', typeF = 'all';
+  function renderHist() {
+    const list = document.getElementById('hist-list');
+    const data = history.filter(a => (typeF === 'all' || a.type === typeF) && (!q || (a.title + a.dev + a.sn).toLowerCase().includes(q)));
+    list.innerHTML = data.map(a => alertRow(a, true)).join('') || '<div class="empty-state"><div class="empty-desc">No matching alerts.</div></div>';
+  }
+  document.getElementById('ack-all').addEventListener('click', () => {
+    if (!open.length) return;
+    open.splice(0).forEach(a => { a.note = 'Acknowledged just now'; history.unshift(a); });
+    AEDARToast.show({ variant: 'success', title: 'All alerts acknowledged' });
+    renderOpen(); renderHist();
+  });
+  document.getElementById('q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); renderHist(); });
+  document.getElementById('type-select').addEventListener('change', e => { typeF = e.detail.value; renderHist(); });
+
+  // tabs
+  const tabs = document.getElementById('tabs');
+  tabs.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    tabs.querySelectorAll('.tab').forEach(x => {
+      const on = x === t; x.classList.toggle('active', on);
+      const b = x.querySelector('.badge-count'); if (b) { b.classList.toggle('is-inverted', on); b.classList.toggle('is-secondary', !on); }
+      document.getElementById(x.dataset.panel).hidden = !on;
+    });
+  }));
+
+  renderOpen(); renderHist();
+});
+</script>
+</body>
+</html>

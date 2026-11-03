@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Table / list pattern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--colors-light-muted); color: var(--colors-light-foreground); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1160px; margin: 0 auto; padding: 56px 40px 96px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 14px; }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 9999px; background: var(--colors-light-primary); }
+  h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+  .lede { font-size: 15px; line-height: 1.6; color: var(--colors-light-muted-foreground); max-width: 680px; margin: 0 0 40px; }
+  .lede strong { color: var(--colors-light-foreground); font-weight: 500; }
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .sec-head h2 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .note { font-size: 12px; color: var(--colors-light-muted-foreground); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span> AEDAR · Foundations</div>
+    <h1>Table / list pattern</h1>
+    <p class="lede">The single data-table pattern reused across the <strong>device list</strong>, <strong>customers list</strong> and <strong>device inventory</strong>. Header row <strong>40px</strong> on muted; body rows <strong>52px</strong> with hover and selection states; a toolbar for search, and a footer with rows-per-page and paging. Sort, search, select and page below — it's live.</p>
+  </header>
+
+  <section>
+    <div class="sec-head"><h2>Device list</h2><span class="note">select · sort · search · paginate</span></div>
+
+    <div class="dt-toolbar">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="input" id="dt-search" placeholder="Search devices, serial, site…" />
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-outline"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>Filter</button>
+      <button class="btn btn-default"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add device</button>
+    </div>
+
+    <div class="dt-wrap">
+      <table class="dt">
+        <thead>
+          <tr>
+            <th class="col-check"><input type="checkbox" class="checkbox" id="dt-all" aria-label="Select all" /></th>
+            <th class="sortable" data-sort="name"><span class="th-inner">Device <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+            <th class="sortable" data-sort="site"><span class="th-inner">Location <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+            <th class="sortable" data-sort="status"><span class="th-inner">Status <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+            <th class="sortable" data-sort="battery"><span class="th-inner">Battery <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+            <th class="sortable" data-sort="seen"><span class="th-inner">Last seen <svg class="th-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg></span></th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="dt-body"></tbody>
+      </table>
+      <div class="dt-footer">
+        <span class="foot-selected" id="dt-selected">0 of 14 row(s) selected.</span>
+        <div class="dt-foot-right">
+          <div class="dt-rows">
+            Rows per page
+            <div class="combobox has-value" data-select id="dt-rpp">
+              <button type="button" class="combobox-trigger"><span class="combobox-value">8</span><svg class="combobox-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+              <div class="combobox-popover is-select" hidden><div class="combobox-list" role="listbox">
+                <div class="combobox-item is-selected" data-value="8">8</div>
+                <div class="combobox-item" data-value="12">12</div>
+                <div class="combobox-item" data-value="20">20</div>
+              </div></div>
+            </div>
+          </div>
+          <span class="dt-pageinfo" id="dt-pageinfo">Page 1 of 2</span>
+          <div class="dt-pagebtns">
+            <button class="btn btn-outline btn-icon" id="pg-first" aria-label="First page"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></svg></button>
+            <button class="btn btn-outline btn-icon" id="pg-prev" aria-label="Previous page"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+            <button class="btn btn-outline btn-icon" id="pg-next" aria-label="Next page"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+            <button class="btn btn-outline btn-icon" id="pg-last" aria-label="Last page"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13 17 5-5-5-5M6 17l5-5-5-5"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const STATUS = {
+  operational: { cls: 'badge-operational', label: 'Operational' },
+  warning:     { cls: 'badge-warning',     label: 'Warning' },
+  validate:    { cls: 'badge-validate',    label: 'To validate' },
+  'in-use':    { cls: 'badge-in-use',      label: 'In use' },
+  offline:     { cls: 'badge-offline',     label: 'Offline' },
+};
+const rows = [
+  { name: 'AED — ER Entrance', serial: 'AED-0042', site: 'District 1 · ER', status: 'operational', battery: 96, seen: '2 min ago', seenv: 2 },
+  { name: 'AED — Hospital B', serial: 'AED-0043', site: 'Province A · Hospital A', status: 'operational', battery: 88, seen: '4 min ago', seenv: 4 },
+  { name: 'AED — City Hall', serial: 'AED-0044', site: 'District 1 · Lobby', status: 'warning', battery: 34, seen: '6 min ago', seenv: 6 },
+  { name: 'AED — OPD Wing', serial: 'AED-0051', site: 'District 1 · OPD', status: 'operational', battery: 72, seen: '3 min ago', seenv: 3 },
+  { name: 'AED — East Wing 3', serial: 'AED-0088', site: 'District 2 · Hospital C', status: 'in-use', battery: 61, seen: 'now', seenv: 0 },
+  { name: 'AED — ER Bay', serial: 'AED-0089', site: 'District 2 · ER', status: 'operational', battery: 90, seen: '1 min ago', seenv: 1 },
+  { name: 'AED — Rehab Center', serial: 'AED-0102', site: 'District 3 · Rehab', status: 'offline', battery: 0, seen: '2 days ago', seenv: 2880 },
+  { name: 'AED — ER Triage', serial: 'AED-0103', site: 'District 3 · ER', status: 'validate', battery: 100, seen: '12 min ago', seenv: 12 },
+  { name: 'AED — School A', serial: 'AED-0110', site: 'District 1 · School A', status: 'operational', battery: 81, seen: '5 min ago', seenv: 5 },
+  { name: 'AED — Cafeteria', serial: 'AED-0111', site: 'District 1 · L1', status: 'warning', battery: 22, seen: '9 min ago', seenv: 9 },
+  { name: 'AED — University A', serial: 'AED-0120', site: 'District 2 · University A', status: 'operational', battery: 67, seen: '7 min ago', seenv: 7 },
+  { name: 'AED — Staff Gym', serial: 'AED-0121', site: 'District 2 · Annex', status: 'offline', battery: 0, seen: '5 hr ago', seenv: 300 },
+  { name: 'AED — Shopping Mall A', serial: 'AED-0130', site: 'District 3 · Shopping Mall A', status: 'operational', battery: 94, seen: '2 min ago', seenv: 2 },
+  { name: 'AED — Helipad', serial: 'AED-0131', site: 'District 3 · Roof', status: 'validate', battery: 100, seen: '15 min ago', seenv: 15 },
+];
+
+let sortKey = null, sortDir = 1, page = 0, perPage = 8, query = '';
+const selected = new Set();
+const body = document.getElementById('dt-body');
+
+function batteryColor(p) {
+  if (p === 0) return 'var(--status-offline)';
+  if (p <= 35) return 'var(--battery-critical)';
+  if (p <= 60) return 'var(--battery-low)';
+  return 'var(--battery-good)';
+}
+function filtered() {
+  let r = rows.filter(d => !query || (d.name + ' ' + d.serial + ' ' + d.site).toLowerCase().includes(query));
+  if (sortKey) r = [...r].sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (sortKey === 'battery') { av = a.battery; bv = b.battery; }
+    if (sortKey === 'seen') { av = a.seenv; bv = b.seenv; }
+    if (typeof av === 'string') return av.localeCompare(bv) * sortDir;
+    return (av - bv) * sortDir;
+  });
+  return r;
+}
+function render() {
+  const data = filtered();
+  const pages = Math.max(1, Math.ceil(data.length / perPage));
+  if (page >= pages) page = pages - 1;
+  const slice = data.slice(page * perPage, page * perPage + perPage);
+  body.innerHTML = slice.map((d, i) => {
+    const idx = rows.indexOf(d);
+    const st = STATUS[d.status];
+    const isSel = selected.has(idx);
+    return `<tr class="${isSel ? 'is-selected' : ''}" data-idx="${idx}">
+      <td class="col-check"><input type="checkbox" class="checkbox row-check" ${isSel ? 'checked' : ''} aria-label="Select row" /></td>
+      <td><div class="dt-cell-stack"><span class="dt-primary">${d.name}</span><span class="dt-mono">${d.serial}</span></div></td>
+      <td>${d.site}</td>
+      <td><span class="badge badge-status ${st.cls}"><span class="badge-dot"></span>${st.label}</span></td>
+      <td>${d.battery === 0 ? '<span class="dt-sub">—</span>' : `<span class="battery"><span class="battery-track"><span class="battery-fill" style="width:${d.battery}%;background:${batteryColor(d.battery)}"></span></span><span class="battery-pct">${d.battery}%</span></span>`}</td>
+      <td class="dt-sub">${d.seen}</td>
+      <td class="col-actions"><span class="dt-actions"><button class="btn btn-ghost btn-icon" aria-label="Row actions"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></span></td>
+    </tr>`;
+  }).join('');
+  // wire row checkboxes
+  body.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', e => {
+    const idx = +e.target.closest('tr').dataset.idx;
+    e.target.checked ? selected.add(idx) : selected.delete(idx);
+    render();
+  }));
+  // footer
+  document.getElementById('dt-selected').textContent = `${selected.size} of ${rows.length} row(s) selected.`;
+  document.getElementById('dt-pageinfo').textContent = `Page ${page + 1} of ${pages}`;
+  const all = document.getElementById('dt-all');
+  const visIdx = slice.map(d => rows.indexOf(d));
+  all.checked = visIdx.length && visIdx.every(i => selected.has(i));
+  // sort header state
+  document.querySelectorAll('.dt th.sortable').forEach(th => th.classList.toggle('sorted', th.dataset.sort === sortKey));
+}
+
+document.querySelectorAll('.dt th.sortable').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.sort;
+  if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+  render();
+}));
+document.getElementById('dt-search').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); page = 0; render(); });
+document.getElementById('dt-all').addEventListener('change', e => {
+  const data = filtered().slice(page * perPage, page * perPage + perPage);
+  data.forEach(d => { const i = rows.indexOf(d); e.target.checked ? selected.add(i) : selected.delete(i); });
+  render();
+});
+document.getElementById('pg-first').addEventListener('click', () => { page = 0; render(); });
+document.getElementById('pg-prev').addEventListener('click', () => { if (page > 0) page--; render(); });
+document.getElementById('pg-next').addEventListener('click', () => { const pages = Math.ceil(filtered().length / perPage); if (page < pages - 1) page++; render(); });
+document.getElementById('pg-last').addEventListener('click', () => { page = Math.ceil(filtered().length / perPage) - 1; render(); });
+document.getElementById('dt-rpp').addEventListener('change', e => { perPage = +e.detail.value; page = 0; render(); });
+
+// Row actions dropdown menu (event-delegated so it survives re-renders)
+const ic = {
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  assign: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
+};
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.dt-actions button');
+  if (!btn) return;
+  e.stopPropagation();
+  const tr = btn.closest('tr');
+  const d = rows[+tr.dataset.idx];
+  AEDARMenu.open(btn, [
+    { header: d.name },
+    { label: 'View details', icon: ic.eye, action: 'view' },
+    { label: 'Edit device', icon: ic.edit, action: 'edit' },
+    { label: 'View on map', icon: ic.map, action: 'map' },
+    { separator: true },
+    { label: 'Assign to node', icon: ic.assign, action: 'assign' },
+    { label: 'Copy serial number', icon: ic.copy, shortcut: '⌘C', action: 'copy' },
+    { separator: true },
+    { label: 'Remove device', icon: ic.trash, destructive: true, action: 'remove' },
+  ], (action) => {
+    if (action === 'copy') navigator.clipboard && navigator.clipboard.writeText(d.serial);
+  });
+});
+
+render();
+</script>
+</body>
+</html>

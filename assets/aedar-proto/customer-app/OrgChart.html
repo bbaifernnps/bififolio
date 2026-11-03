@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEDAR — Org chart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../components/aedar-ui.css" />
+<link rel="stylesheet" href="../components/app.css" />
+<script src="../components/combobox.js" defer></script>
+<script src="../components/menu.js" defer></script>
+<script src="../components/toast.js" defer></script>
+<script src="../components/devices-data.js" defer></script>
+<script src="../components/i18n.js" defer></script>
+<script src="../components/app-nav.js" defer></script>
+<style>
+  .org-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .org-layout { grid-template-columns: 1fr; } }
+  .tree { border: 1px solid var(--colors-light-border); border-radius: 16px; background: var(--colors-light-card); padding: 10px; }
+  .trow { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; cursor: pointer; }
+  .trow:hover { background: var(--colors-light-muted); }
+  .trow.sel { background: var(--colors-light-secondary); }
+  .trow .caret { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; color: var(--colors-light-muted-foreground); flex-shrink: 0; transition: transform .12s; }
+  .trow.collapsed .caret { transform: rotate(-90deg); }
+  .trow .caret.leaf { visibility: hidden; }
+  .trow .tico { width: 16px; height: 16px; color: var(--colors-light-muted-foreground); flex-shrink: 0; }
+  .trow.sel .tico { color: var(--colors-light-secondary-foreground); }
+  .trow .tname { flex-grow: 1; font-size: 14px; font-weight: 500; }
+  .trow .tmeta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .trow .tcount { font-size: 12px; color: var(--colors-light-muted-foreground); font-family: var(--font-mono); min-width: 50px; text-align: right; }
+  /* tiny status dots summarising a group's fleet */
+  .tstat { display: inline-flex; align-items: center; gap: 5px; min-width: 74px; justify-content: flex-end; }
+  .tstat .status-dot { width: 8px; height: 8px; }
+  .tstat .n { font-size: 12px; color: var(--colors-light-muted-foreground); font-variant-numeric: tabular-nums; }
+  /* neutral dot: "this group has items needing attention" — not a single status */
+  .tstat .alert-dot { background: var(--colors-light-muted-foreground); }
+  .tchildren { margin-left: 18px; border-left: 1px solid var(--colors-light-border); padding-left: 6px; }
+  .tchildren.hidden { display: none; }
+  .trow .monitor-mini { opacity: 0; }
+  .trow:hover .monitor-mini, .trow.sel .monitor-mini { opacity: 1; }
+
+  .detail { position: sticky; top: 20px; }
+  .detail .d-title { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .detail .d-path { font-family: var(--font-mono); font-size: 12px; color: var(--colors-light-muted-foreground); word-break: break-word; margin-top: 4px; line-height: 1.5; }
+  .d-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0; }
+  .d-metric { border: 1px solid var(--colors-light-border); border-radius: 10px; padding: 12px; text-align: center; }
+  .d-metric .m-val { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .d-metric .m-lbl { font-size: 11px; color: var(--colors-light-muted-foreground); margin-top: 3px; }
+  .d-break { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+  .d-break-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .d-break-row .status-dot { width: 9px; height: 9px; }
+  .d-break-row .lbl { flex-grow: 1; color: var(--colors-light-foreground); }
+  .d-break-row .n { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .d-section-label { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--colors-light-muted-foreground); margin-bottom: 10px; }
+  .readonly-note { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--colors-light-muted-foreground); background: var(--colors-light-muted); border-radius: 8px; padding: 7px 11px; }
+  .readonly-note svg { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+</head>
+<body class="app">
+<div data-app-nav data-active="orgchart" data-scope="Province A · ทั้งหมด"></div>
+
+<main class="app-page">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title" data-i18n="page.orgchart.title">Org chart</h1>
+      <div class="page-sub"><span>Province A</span><span class="sep"></span><span data-i18n="page.orgchart.sub">groups &amp; sub-groups you can monitor</span></div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-outline" id="expand-all"><svg class="btn-icon-glyph" id="ea-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5M17 18l-5-5-5 5"/></svg><span id="ea-label">Collapse all</span></button>
+    </div>
+  </div>
+
+  <div class="org-layout">
+    <div class="tree" id="tree"></div>
+
+    <div class="ui-card detail" id="detail">
+      <div class="ui-card-body">
+        <div class="d-title" id="d-name">—</div>
+        <div class="d-path" id="d-path">—</div>
+
+        <div class="d-metrics">
+          <div class="d-metric"><div class="m-val" id="d-dev">0</div><div class="m-lbl">Devices</div></div>
+          <div class="d-metric"><div class="m-val" id="d-sub">0</div><div class="m-lbl">Sub-groups</div></div>
+          <div class="d-metric"><div class="m-val" id="d-usr">0</div><div class="m-lbl">Users</div></div>
+        </div>
+
+        <div class="d-section-label">Fleet status in this group</div>
+        <div class="d-break" id="d-break"></div>
+
+        <a class="btn btn-default" id="d-monitor" style="width:100%;" href="Dashboard.html"><svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Monitor these devices</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const DEV = window.AEDAR_DEVICES, STATUS = window.AEDAR_STATUS;
+
+  // Read-only structure (managed by MediGrowth). Leaves carry {site,node} to map
+  // onto AED device data; users are the AEDAR accounts homed at each node.
+  const tree = { id: 'root', name: 'Province A', users: 1, open: true, children: [
+    { id: 'mueang', name: 'District 1', site: 'District 1', users: 1, open: true, children: [
+      { id: 'm-nkp',  name: 'Hospital A',            site: 'District 1', node: 'Hospital A',            users: 2 },
+      { id: 'm-mhr',  name: 'Hospital B',   site: 'District 1', node: 'Hospital B', users: 4 },
+      { id: 'm-ypr',  name: 'School A',        site: 'District 1', node: 'School A',        users: 1 },
+      { id: 'm-tsb',  name: 'City Hall',            site: 'District 1', node: 'City Hall',            users: 1 },
+    ] },
+    { id: 'sansai', name: 'District 2', site: 'District 2', users: 1, open: true, children: [
+      { id: 's-hosp', name: 'Hospital C', site: 'District 2', node: 'Hospital C', users: 2 },
+      { id: 's-mju',  name: 'University A',  site: 'District 2', node: 'University A',  users: 1 },
+    ] },
+    { id: 'hangdong', name: 'District 3', site: 'District 3', users: 1, open: true, children: [
+      { id: 'h-hosp', name: 'Hospital D',   site: 'District 3', node: 'Hospital D',   users: 1 },
+      { id: 'h-ctl',  name: 'Shopping Mall A', site: 'District 3', node: 'Shopping Mall A', users: 1 },
+    ] },
+  ] };
+
+  let selId = 'root';
+  const treeEl = document.getElementById('tree');
+
+  function find(node, id) { if (node.id === id) return node; for (const c of (node.children || [])) { const r = find(c, id); if (r) return r; } return null; }
+  function nodeMatch(n, d) { if (n.id === 'root') return true; if (n.node) return d.site === n.site && d.node === n.node; return d.site === n.site; }
+  function devsOf(n) { return DEV.filter(d => nodeMatch(n, d)); }
+  function subCount(n) { return (n.children || []).reduce((a, c) => a + 1 + subCount(c), 0); }
+  function userCount(n) { return (n.users || 0) + (n.children || []).reduce((a, c) => a + userCount(c), 0); }
+  function pathOf(id) { const chain = []; (function walk(n, acc) { const a = [...acc, n.name]; if (n.id === id) { chain.push(...a); return true; } return (n.children || []).some(c => walk(c, a)); })(tree, []); return chain.join('  /  '); }
+  function monitorHref(n) {
+    if (n.id === 'root') return 'Dashboard.html';
+    const p = new URLSearchParams();
+    p.set('site', n.site);
+    if (n.node) { p.set('node', n.node); p.set('label', n.site + ' · ' + n.node); }
+    else p.set('label', n.name + ' · All');
+    return 'Dashboard.html?' + p.toString();
+  }
+
+  const ICO_FOLDER = '<svg class="tico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>';
+  const ICO_PIN = '<svg class="tico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+  const CARET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  const ICO_MONITOR = '<svg class="btn-icon-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+
+  // ranked status colours for the mini-summary (most urgent first)
+  const STLIST = ['in-use', 'warning', 'validate', 'offline', 'operational'];
+
+  function renderNode(n) {
+    const kids = n.children || [];
+    const hasKids = kids.length > 0;
+    const devs = devsOf(n);
+    const alert = devs.filter(d => d.status === 'in-use' || d.status === 'warning' || d.status === 'offline').length;
+    const row = `<div class="trow ${n.id === selId ? 'sel' : ''} ${n.open === false ? 'collapsed' : ''}" data-id="${n.id}">
+      <span class="caret ${hasKids ? '' : 'leaf'}" data-toggle>${CARET}</span>
+      ${ICO_FOLDER}
+      <span class="tname">${n.name}</span>
+      <span class="tmeta">
+        <span class="tstat">${alert ? `<span class="status-dot alert-dot"></span><span class="n">${alert} alert${alert===1?'':'s'}</span>` : ''}</span>
+        <span class="tcount">${devs.length} AED</span>
+        <a class="btn btn-ghost btn-icon-sm monitor-mini" href="${monitorHref(n)}" aria-label="Monitor" title="Monitor these devices">${ICO_MONITOR}</a>
+      </span>
+    </div>`;
+    const childrenHtml = hasKids ? `<div class="tchildren ${n.open === false ? 'hidden' : ''}">${kids.map(renderNode).join('')}</div>` : '';
+    return `<div class="tnode">${row}${childrenHtml}</div>`;
+  }
+
+  function renderDetail() {
+    const s = find(tree, selId) || tree;
+    const devs = devsOf(s);
+    document.getElementById('d-name').textContent = s.name;
+    document.getElementById('d-path').textContent = pathOf(selId);
+    document.getElementById('d-dev').textContent = devs.length;
+    document.getElementById('d-sub').textContent = subCount(s);
+    document.getElementById('d-usr').textContent = userCount(s);
+    // status breakdown (only non-zero)
+    const brk = document.getElementById('d-break');
+    const rows = STLIST.map(st => ({ st, n: devs.filter(d => d.status === st).length })).filter(x => x.n > 0);
+    brk.innerHTML = rows.length
+      ? rows.map(x => `<div class="d-break-row"><span class="status-dot ${x.st}"></span><span class="lbl">${STATUS[x.st].label}</span><span class="n">${x.n}</span></div>`).join('')
+      : '<div class="d-break-row"><span class="lbl" style="color:var(--colors-light-muted-foreground)">No devices in this group.</span></div>';
+    const btn = document.getElementById('d-monitor');
+    btn.href = monitorHref(s);
+    btn.style.display = devs.length ? '' : 'none';
+  }
+
+  function render() { treeEl.innerHTML = renderNode(tree); wire(); renderDetail(); }
+
+  function wire() {
+    treeEl.querySelectorAll('.trow').forEach(row => {
+      const id = row.dataset.id;
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.monitor-mini')) return; // let the link navigate
+        if (e.target.closest('[data-toggle]')) { const r = find(tree, id); if ((r.children || []).length) { r.open = r.open === false ? true : false; render(); } return; }
+        selId = id; render();
+      });
+    });
+  }
+
+  const CHEV_DOWN = 'm7 13 5 5 5-5M7 6l5 5 5-5';
+  const CHEV_UP = 'm17 11-5-5-5 5M17 18l-5-5-5 5';
+  let allOpen = true;
+  function setAll(open) {
+    (function o(n){ n.open = open; (n.children || []).forEach(o); })(tree);
+    allOpen = open;
+    document.getElementById('ea-label').textContent = open ? 'Collapse all' : 'Expand all';
+    document.getElementById('ea-ico').querySelector('path').setAttribute('d', open ? CHEV_UP : CHEV_DOWN);
+    render();
+  }
+  document.getElementById('expand-all').addEventListener('click', () => setAll(!allOpen));
+
+  render();
+});
+</script>
+</body>
+</html>
