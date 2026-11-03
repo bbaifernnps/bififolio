@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b1450">
+<meta name="description" content="A just-for-fun Inside Out inspired mood tracker. Turn your day into a memory orb.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Headquarters: an Inside Out mood tracker">
+<meta property="og:description" content="A just-for-fun fan project. Turn your day into a memory orb.">
+<meta property="og:type" content="website">
+<title>Headquarters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="scene" id="scene" aria-hidden="true"></div>
+<div class="tint" id="tint" aria-hidden="true"></div>
+<div class="shade" aria-hidden="true"></div>
+
+<div class="app">
+  <header>
+    <div class="brand">Headquarters<small>Mood tracker</small></div>
+    <div class="head-right">
+      <span class="today-date" id="todayDate"></span>
+      <button class="music-btn" id="musicBtn" aria-label="Music" aria-expanded="false" aria-controls="musicCard">
+        <svg viewBox="0 0 24 24" class="ico-note"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- TODAY -->
+    <section class="view active" id="view-today" aria-label="Today">
+      <div class="stage" id="stage">
+        <div class="orb-wrap" id="orbWrap">
+          <div class="aura" aria-hidden="true"></div>
+          <button class="orb-btn" id="orbBtn" aria-label="Poke the memory orb"><span class="orb empty" id="mainOrb"></span></button>
+          <div class="pedestal"></div>
+        </div>
+        <div class="readout" id="readout">
+          <div class="emotion-name" id="emotionName">How's today feeling?</div>
+          <div class="emotion-meaning" id="emotionMeaning">Pick the emotion that ran Headquarters today.</div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel">
+        <div class="panel-head" id="panelHead"></div>
+        <div class="picker" id="picker" role="radiogroup" aria-label="Emotion"></div>
+        <div class="row">
+          <div class="seg" id="intensity" role="radiogroup" aria-label="Intensity">
+            <button role="radio" aria-checked="false" data-i="1">A little</button>
+            <button role="radio" aria-checked="true" data-i="2">Quite</button>
+            <button role="radio" aria-checked="false" data-i="3">A lot</button>
+          </div>
+          <button class="core-toggle" id="coreToggle" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z" stroke-linejoin="round"/></svg>
+            Core memory
+          </button>
+        </div>
+        <div class="note-row">
+          <input class="note" id="note" type="text" maxlength="140" placeholder="What happened? (optional)" autocomplete="off">
+          <button class="photo-btn" id="photoBtn" type="button" aria-label="Add a photo (optional)" title="Add a photo (optional)">
+            <svg viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-1.6h6.6L16.5 7h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.2"/></svg>
+            <span class="photo-thumb" aria-hidden="true"></span>
+          </button>
+          <button class="photo-clear" id="photoClear" type="button" aria-label="Remove photo" hidden>×</button>
+          <input type="file" id="photoInput" accept="image/*" hidden>
+        </div>
+        <button class="cta" id="store" disabled>Store memory</button>
+        <p class="hint">Press <kbd>1</kbd>–<kbd>9</kbd> to pick · <kbd>Enter</kbd> to store</p>
+      </div>
+    </section>
+
+    <!-- SHELF -->
+    <section class="view" id="view-shelf" aria-label="Memory shelf">
+      <div class="scroll">
+        <div class="view-title"><h2>Memory shelf</h2><p id="shelfCount"></p></div>
+        <div class="chips" id="chips" role="group" aria-label="Filter by emotion"></div>
+        <div class="card">
+          <div class="detail" id="detail">
+            <span class="orb" id="detailOrb"></span>
+            <div class="detail-body">
+              <div class="when" id="detailWhen"></div>
+              <h3 id="detailName"></h3>
+              <p id="detailNote"></p>
+            </div>
+            <button class="del" id="detailDel" aria-label="Remove this memory">Remove</button>
+          </div>
+          <div class="shelf-grid" id="shelfGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section class="view" id="view-insights" aria-label="Insights">
+      <div class="scroll">
+        <div class="view-title"><h2>Insights</h2><p id="insightRangeLabel"></p></div>
+        <div class="seg wide" id="range" role="radiogroup" aria-label="Range">
+          <button role="radio" aria-checked="true" data-r="7">Week</button>
+          <button role="radio" aria-checked="false" data-r="30">Month</button>
+          <button role="radio" aria-checked="false" data-r="0">All</button>
+        </div>
+        <div id="insightBody"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav aria-label="Main">
+    <button data-view="today" aria-current="page">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 9.5c.6-1 1.6-1.5 2.6-1.5"/></svg>Today
+    </button>
+    <button data-view="shelf" id="navShelf">
+      <svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2.6"/><circle cx="17" cy="7" r="2.6"/><circle cx="7" cy="17" r="2.6"/><circle cx="17" cy="17" r="2.6"/></svg>Shelf
+    </button>
+    <button data-view="insights">
+      <svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-6"/></svg>Insights
+    </button>
+  </nav>
+</div>
+
+<!-- music -->
+<aside class="music" id="musicCard" aria-label="Music player" aria-hidden="true">
+  <div class="music-top">
+    <div>
+      <b>Bundle of Joy</b>
+      <span>Inside Out · Michael Giacchino</span>
+    </div>
+    <button class="music-close" id="musicClose" aria-label="Close music player">×</button>
+  </div>
+  <div class="yt-frame" aria-hidden="true"><div id="ytHost"></div></div>
+  <div class="music-ctrl">
+    <button class="play" id="musicPlay" aria-label="Play music">
+      <svg viewBox="0 0 24 24" class="i-play"><path d="M8 5.5v13l11-6.5z"/></svg>
+      <svg viewBox="0 0 24 24" class="i-pause"><path d="M7 5.5h3.5v13H7zM13.5 5.5H17v13h-3.5z"/></svg>
+    </button>
+    <div class="vol">
+      <button class="vol-btn" id="volBtn" aria-label="Mute music" data-level="2">
+        <svg viewBox="0 0 24 24">
+          <path class="spk" d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/>
+          <path class="w1" d="M15 9.2a4 4 0 0 1 0 5.6"/>
+          <path class="w2" d="M17.6 6.6a7.6 7.6 0 0 1 0 10.8"/>
+          <path class="x" d="M15.5 9.5l5 5M20.5 9.5l-5 5"/>
+        </svg>
+      </button>
+      <input type="range" id="musicVol" min="0" max="100" value="55" aria-label="Music volume">
+    </div>
+  </div>
+  <p class="music-err" id="musicErr" hidden>The player couldn't load. <a href="https://www.youtube.com/watch?v=O4N0Fsnsr4I" target="_blank" rel="noopener">Open on YouTube ↗</a></p>
+</aside>
+
+<div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt="Memory photo"><button class="lightbox-close" id="lightboxClose" aria-label="Close photo">×</button></div>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<p class="fan-note">Fan project made for fun. Not affiliated with Disney or Pixar.</p>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
