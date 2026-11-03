@@ -655,3 +655,15 @@ html.deck-on { scroll-snap-type: y proximity; scroll-padding-top: 0; }
 .brand-logo { height: 34px; margin-bottom: 20px; }
 .portrait { position: relative; overflow: hidden; }
 .portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 52% 42%; border-radius: inherit; }
+
+/* Brand badge: no inherited card-image motion; own pop + light sweep */
+.wmedia .brand-chip { overflow: hidden; transition: transform .5s var(--ease), box-shadow .5s var(--ease); }
+.wmedia .brand-chip img, .is-play .wmedia .brand-chip img { margin: 0; transform: none; border-radius: 0; opacity: 1; }
+.wmedia .brand-chip.lm img { height: 26px; border-radius: 6px; }
+.wmedia .brand-chip::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(36, 87, 214, .16) 50%, transparent 70%); transform: translateX(-120%); pointer-events: none; }
+.is-play .wmedia .brand-chip { transform: translateY(-3px); box-shadow: 0 0 0 1px var(--blue-mid), 0 16px 26px -12px rgba(11, 23, 48, .4); }
+.is-play .wmedia .brand-chip img { animation: chipPop .8s var(--ease) .15s both; }
+.is-play .wmedia .brand-chip::after { animation: chipSweep 1.1s var(--ease) .2s both; }
+@keyframes chipPop { 0% { transform: scale(1); } 35% { transform: scale(1.22) rotate(-6deg); } 70% { transform: scale(.96) rotate(2deg); } 100% { transform: scale(1); } }
+@keyframes chipSweep { to { transform: translateX(120%); } }
+@media (prefers-reduced-motion: reduce) { .is-play .wmedia .brand-chip img, .is-play .wmedia .brand-chip::after { animation: none; } }
