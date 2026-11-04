@@ -290,3 +290,15 @@
     document.body.appendChild(o); requestAnimationFrame(() => o.classList.add('on'));
   });
 })();
+
+/* ---- Pins on a scrollable phone: scroll to the pin you picked ---- */
+(() => {
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.legend [data-tab]');
+    if (!b) return;
+    const slide = b.closest('.slide'); const sp = slide && slide.querySelector('.scrollphone');
+    if (!sp) return;
+    const i = [...b.parentElement.children].indexOf(b), pin = sp.querySelectorAll('.pin')[i];
+    if (pin) sp.scrollTo({ top: Math.max(0, pin.offsetTop - sp.clientHeight / 3), behavior: 'smooth' });
+  });
+})();
